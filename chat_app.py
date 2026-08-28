@@ -1,5 +1,6 @@
 import streamlit as st
 from groq import Groq
+import random
 
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
@@ -61,6 +62,21 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
     ]
 
+# بنك الأسئلة المتنوعة لتتجدد عشوائياً مع كل تحديث (Refresh)
+question_bank = [
+    "كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟",
+    "ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟",
+    "كيف نتحكم في نشاط الماء (aw) لمنع تلف الأغذية؟",
+    "ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟",
+    "ما تأثير درجات حرارة البسترة على الفيتامينات الحساسة؟",
+    "كيف نحسب الكفاءة الحرارية لأنظمة التعقيم التجاري؟",
+    "ما هي أحدث تقنيات التغليف النشط (Active Packaging) للأغذية؟",
+    "كيف نتجنب نمو البكتيريا لهاوية الأكسجين في الأغذية المعلبة؟"
+]
+
+# اختيار 3 أسئلة عشوائية فريدة مع كل تحديث للصفحة
+random_suggestions = random.sample(question_bank, 3)
+
 # توسيط شريط الأدوات بالكامل في منتصف الشاشة
 _, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
 
@@ -83,20 +99,12 @@ with col_btn2:
     )
 
 with col_btn3:
-    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية متنوعة"):
-        st.markdown("**اختر سؤالاً استراتيجياً:**")
-        if st.button("كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟"})
-            st.rerun()
-        if st.button("ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟"})
-            st.rerun()
-        if st.button("كيف نتحكم في نشاط الماء ($a_w$) لمنع تلف الأغذية؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "كيف نتحكم في نشاط الماء (aw) لمنع تلف الأغذية؟"})
-            st.rerun()
-        if st.button("ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟"})
-            st.rerun()
+    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية تتجدد باستمرار"):
+        st.markdown("**أسئلة مقترحة عشوائية:**")
+        for q in random_suggestions:
+            if st.button(q, use_container_width=True, key=q):
+                st.session_state.messages.append({"role": "user", "content": q})
+                st.rerun()
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -106,7 +114,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد: سواء كتب المستخدم أو ضغط على زر مقترح
+# الآلية الموحدة للرد التلقائي
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
