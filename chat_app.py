@@ -40,3 +40,5 @@ if user_input:
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
+            st.sidebar.markdown("---")
+st.sidebar.markdown("### Developed by: **Hazem El-Helw** 🚀")
