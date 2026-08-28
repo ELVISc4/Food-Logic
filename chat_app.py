@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية CSS المتقدمة ---
+# --- التنسيقات البصرية CSS المتقدمة مع حل مشكلة المسافات وتداخل القوائم (RTL List Fix) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -38,10 +38,22 @@ st.markdown("""
         margin-top: 5px;
     }
 
-    /* ضبط اتجاه النصوص العربية والإنجليزية بسلاسة */
-    .stChatMessage, .stTextInput, p, span, div {
-        direction: rtl;
-        text-align: right;
+    /* ضبط اتجاه النصوص العربية والإنجليزية وقوائم النقاط بدقة لتجنب المسافات الشاذة */
+    .stChatMessage {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+    
+    .stChatMessage p, .stChatMessage li, .stChatMessage span, .stChatMessage div {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* إصلاح محاذاة قوائم النقاط (Bullet Points) والترقيم لتماشي اللغة العربية */
+    ul, ol {
+        text-align: right !important;
+        padding-right: 20px !important;
+        padding-left: 0px !important;
     }
 
     /* تنسيق صندوق الإدخال */
@@ -140,23 +152,21 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع إضافة أنيميشن التفكير (Spinner)
+# الآلية الموحدة للرد التلقائي مع تفعيل أنيميشن الكتابة التدريجية (Streaming Typing Effect)
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        with st.spinner("Nutri يحلل البيانات ويفكر بطريقة هندسية... 🍏"):
-            try:
-                chat_completion = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
-                    messages=st.session_state.messages,
-                    model="qwen/qwen3.8-27b",
-                    temperature=0.2,
-                    max_tokens=1024,
-                )
-                answer = chat_completion.choices[0].message.content
-            except Exception as e:
-                answer = f"حدث خطأ شبكي: {e}"
-        
-        st.markdown(answer)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+        try:
+            stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+                messages=st.session_state.messages,
+                model="qwen/qwen3.8-27b",
+                temperature=0.2,
+                max_tokens=1024,
+                stream=True,
+            )
+            answer = st.write_stream(stream)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+        except Exception as e:
+            st.error(f"حدث خطأ شبكي: {e}")
 
 # صندوق الإدخال التقليدي
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
@@ -168,6 +178,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
