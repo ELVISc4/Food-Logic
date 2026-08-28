@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية المتقدمة (تدريج لوني، إخفاء الشريط المزعج، وتنسيق الخطوط) ---
+# --- التنسيقات البصرية CSS (تدريج لوني عميق وإخفاء القوائم غير المرغوبة) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -13,16 +13,16 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
 
-    /* خلفية متدرجة احترافية (Gradient Background) تكسر الجمود البصري */
-    .stApp {
-        background: linear-gradient(160deg, #0d0d12 0%, #161622 50%, #0a0a0f 100%) !important;
+    /* فرض خلفية متدرجة ديناميكية تغطي كامل الشاشة وتكسر السواد المصمت */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background: linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%) !important;
     }
 
-    /* إخفاء الشريط العلوي والشريط الجانبي تماماً لمنع أي فوضى بصرية */
+    /* إخفاء الشريط العلوي والشريط الجانبي تماماً */
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* توسيط العنوان الرئيسي */
+    /* توسيط العنوان الرئيسي وتنسيقه */
     .centered-title {
         text-align: center;
         font-weight: 700;
@@ -61,14 +61,26 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
     ]
 
-# شريط تحكم علوي صغير ونظيف داخل الصفحة (زر مسح المحادثة)
-col1, col2 = st.columns([6, 1])
+# شريط تحكم علوي يضم زر المسح وزر التصدير بجانبه
+col1, col2, col3 = st.columns([4, 1, 1])
 with col2:
     if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
         st.session_state.messages = [
             {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
         ]
         st.rerun()
+
+with col3:
+    # تجهيز محتوى الشات لتصديره كملف نصي
+    chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
+    st.download_button(
+        label="📥 حفظ",
+        data=chat_export,
+        file_name="nutri_chat_history.txt",
+        mime="text/plain",
+        help="تصدير وتحميل المحادثة",
+        use_container_width=True
+    )
 
 # عرض رسائل الشات
 for msg in st.session_state.messages:
