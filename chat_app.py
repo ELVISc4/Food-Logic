@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية CSS (تدريج لوني عميق وإخفاء القوائم غير المرغوبة) ---
+# --- التنسيقات البصرية CSS المتقدمة ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -13,7 +13,7 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
 
-    /* فرض خلفية متدرجة ديناميكية تغطي كامل الشاشة وتكسر السواد المصمت */
+    /* خلفية متدرجة ديناميكية احترافية */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
         background: linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%) !important;
     }
@@ -22,7 +22,7 @@ st.markdown("""
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* توسيط العنوان الرئيسي وتنسيقه */
+    /* توسيط العنوان الرئيسي */
     .centered-title {
         text-align: center;
         font-weight: 700;
@@ -61,8 +61,9 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
     ]
 
-# شريط تحكم علوي يضم زر المسح وزر التصدير بجانبه
-col1, col2, col3 = st.columns([4, 1, 1])
+# شريط أدوات علوي منظم (مسح، حفظ، وأسئلة مقترحة)
+col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+
 with col2:
     if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
         st.session_state.messages = [
@@ -71,7 +72,6 @@ with col2:
         st.rerun()
 
 with col3:
-    # تجهيز محتوى الشات لتصديره كملف نصي
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button(
         label="📥 حفظ",
@@ -81,6 +81,19 @@ with col3:
         help="تصدير وتحميل المحادثة",
         use_container_width=True
     )
+
+with col4:
+    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
+        st.markdown("**اختر سؤالاً استراتيجياً:**")
+        if st.button("كيف أتحكم في نشاط الماء ($a_w$) للحفاظ على صلاحية المنتج؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "كيف أتحكم في نشاط الماء (aw) للحفاظ على صلاحية المنتج؟"})
+            st.rerun()
+        if st.button("ما هي خطوات تطبيق نظام HACCP بخطوط إنتاج الأغذية؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "ما هي خطوات تطبيق نظام HACCP بخطوط إنتاج الأغذية؟"})
+            st.rerun()
+        if st.button("ما تأثير تفاعلات ميلارد على جودة الأغذية؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "ما تأثير تفاعلات ميلارد على جودة الأغذية؟"})
+            st.rerun()
 
 # عرض رسائل الشات
 for msg in st.session_state.messages:
@@ -98,7 +111,7 @@ if user_input:
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
         try:
-            chat_completion = client = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+            chat_completion = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
