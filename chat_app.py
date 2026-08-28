@@ -1,39 +1,64 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعداد الواجهة والاسم مع تفعيل التصميم الاحترافي
+# 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- تنسيقات CSS لحل مشاكل الخطوط، الاتجاه، والتداخل (RTL & Typography) ---
+# --- التنسيقات البصرية CSS المتقدمة (خط Cairo، تحسين الشات، وتوسيط العنوان) ---
 st.markdown("""
     <style>
-    /* تغيير الخط الافتراضي بالكامل إلى خط عصري ونظيف */
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Cairo', sans-serif !important;
     }
 
-    /* ضبط اتجاه النصوص العربية لتكون من اليمين لليسار ومنع تداخل الإنجليزي */
+    /* توسيط العنوان الرئيسي بشكل احترافي */
+    .centered-title {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 0px;
+    }
+
+    /* ضبط اتجاه النصوص العربية والإنجليزية بسلاسة */
     .stChatMessage, .stTextInput, p, span, div {
         direction: rtl;
         text-align: right;
     }
 
-    /* تخصيص صندوق الإدخال وجعله أكثر مرونة وجمالاً */
+    /* تحسين شكل صندوق الإدخال وتنعيمه */
     .stChatInputContainer {
         border-radius: 12px;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# عنوان التطبيق
-st.title("🍏 Nutri - AI Advisor")
+# 2. العنوان في المنتصف تماماً
+st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-# 2. قراءة المفتاح بأمان من إعدادات المنصة السحابية
+# 3. الشريط الجانبي للإعدادات الذكية (Clean Cache & Controls)
+with st.sidebar:
+    st.markdown("### ⚙️ لوحة التحكم")
+    st.markdown("---")
+    
+    # زر مسح الذاكرة (Clear Cache / Reset Chat)
+    if st.button("🗑️ مسح المحادثة (Clear Chat)", use_container_width=True):
+        st.session_state.messages = [
+            {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
+        ]
+        st.rerun()
+        
+    st.markdown("---")
+    st.markdown("### 🚀 معلومات المطور")
+    st.markdown("**Leader Elvis**")
+    st.markdown("Food Tech & AI Engineer")
+
+# 4. قراءة المفتاح بأمان من إعدادات المنصة السحابية
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-# 3. ذاكرة المحادثة ودستور النظام
+# 5. ذاكرة المحادثة ودستور النظام
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
@@ -66,9 +91,9 @@ if user_input:
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
 
-# --- توقيعك الهندسي المباشر أسفل الصفحة ---
+# 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: gray; font-family: Cairo;'>Designed & Developed 🚀 by <b>Leader Elvis</b></p>", 
+    "<p style='text-align: center; color: gray; font-family: Cairo; font-size: 13px;'>Designed & Developed  🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
