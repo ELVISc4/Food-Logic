@@ -98,7 +98,7 @@ question_bank = [
     "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
     "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
     "كيف يتم تصميم وتطوير خطوط إنتاج وتعبئة الأغذية بكفاءة عالية؟",
-    "ما هي تأثيرات عمليات الحفظ والحرارة على القيمة الغذائية للمنتج؟",
+    "ما هي تأثيرات عمليات الحفظ الحراري على القيمة الغذائية للمنتج؟",
     "كيف نبتكر وصفات وتركيبات (Formulation) جديدة تناسب متطلبات الأسواق؟",
     "ما هي الطرق العلمية المتبعة للسيطرة على نمو الميكروبات وفساد الأغذية؟"
 ]
@@ -140,23 +140,21 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع إضافة أنيميشن التفكير (Spinner)
+# الآلية الموحدة للرد التلقائي مع تأثير الكتابة التدريجية (Streaming Typing Effect)
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        with st.spinner("Nutri يحلل البيانات ويفكر بطريقة هندسية... 🍏"):
-            try:
-                chat_completion = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
-                    messages=st.session_state.messages,
-                    model="qwen/qwen3.8-27b",
-                    temperature=0.2,
-                    max_tokens=1024,
-                )
-                answer = chat_completion.choices[0].message.content
-            except Exception as e:
-                answer = f"حدث خطأ شبكي: {e}"
-        
-        st.markdown(answer)
-        st.session_state.messages.append({"role": "assistant", "content": answer})
+        try:
+            stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+                messages=st.session_state.messages,
+                model="qwen/qwen3.8-27b",
+                temperature=0.2,
+                max_tokens=1024,
+                stream=True,
+            )
+            answer = st.write_stream(stream)
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+        except Exception as e:
+            st.error(f"حدث خطأ شبكي: {e}")
 
 # صندوق الإدخال التقليدي
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
