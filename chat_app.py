@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية المتقدمة وتوسيط الوصف بدقة تامة وإصلاح المحاذاة ---
+# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -23,19 +23,16 @@ st.markdown("""
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* توسيط العنوان الرئيسي والوصف بدقة تامة في المنتصف */
+    /* توسيط العنوان الرئيسي */
     .centered-title {
-        text-align: center !important;
+        text-align: center;
         font-weight: 700;
         color: #ffffff;
         margin-bottom: 0px;
-        width: 100%;
     }
     
     .centered-subtitle {
-        text-align: center !important;
-        display: block !important;
-        width: 100% !important;
+        text-align: center;
         color: #94a3b8;
         font-size: 14px;
         margin-top: 5px;
@@ -67,7 +64,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان والوصف في المنتصف تماماً
+# 2. العنوان في المنتصف تماماً
 st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -122,7 +119,7 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# شريط الأدوات المنظم في منتصف الشاشة
+# توسيط شريط الأدوات بالكامل في منتصف الشاشة
 _, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
 
 with col_btn1:
@@ -143,16 +140,12 @@ with col_btn2:
     )
 
 with col_btn3:
-    # استخدام st.selectbox لتغلق القائمة تلقائياً فور اختيار أي سؤال مقترح
-    selected_sugg = st.selectbox(
-        "💡 مقترحة",
-        options=["💡 مقترحة..."] + st.session_state.random_suggestions,
-        key="suggestion_dropdown",
-        label_visibility="collapsed"
-    )
-    if selected_sugg and selected_sugg != "💡 مقترحة...":
-        st.session_state.messages.append({"role": "user", "content": selected_sugg})
-        st.rerun()
+    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
+        st.markdown("**أسئلة مقترحة:**")
+        for q in st.session_state.random_suggestions:
+            if st.button(q, use_container_width=True, key=f"sugg_{q}"):
+                st.session_state.messages.append({"role": "user", "content": q})
+                st.rerun()
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -170,7 +163,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=4000,
                 stream=True,
             )
             
@@ -195,6 +188,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
