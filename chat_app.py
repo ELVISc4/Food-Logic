@@ -149,7 +149,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     messages=st.session_state.messages,
                     model="qwen/qwen3.8-27b",
                     temperature=0.2,
-                    max_tokens=1024,
+                    max_tokens=3000,
                 )
                 answer = chat_completion.choices[0].message.content
             except Exception as e:
