@@ -1,9 +1,17 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعداد الواجهة بالاسم الجديد
+# 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏")
 st.title("🍏 Nutri - AI Advisor")
+
+# --- إضافة توقيعك الهندسي في الشريط الجانبي (Sidebar) ---
+st.sidebar.title("System Info")
+st.sidebar.markdown("---")
+st.sidebar.markdown("### Developed by:")
+st.sidebar.markdown("🚀 **Hazem El-Helw**")
+st.sidebar.markdown("Food Technologist")
+st.sidebar.markdown("---")
 
 # 2. قراءة المفتاح بأمان من إعدادات المنصة السحابية
 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -40,5 +48,3 @@ if user_input:
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
-            st.sidebar.markdown("---")
-st.sidebar.markdown("### Developed by: **Hazem El-Helw** 🚀")
