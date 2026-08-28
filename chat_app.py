@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية المتقدمة وتوسيط النصوص وإصلاح المحاذاة ---
+# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -23,22 +23,19 @@ st.markdown("""
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* توسيط العنوان الرئيسي والوصف بدقة تامة */
+    /* توسيط العنوان الرئيسي */
     .centered-title {
-        text-align: center !important;
+        text-align: center;
         font-weight: 700;
         color: #ffffff;
         margin-bottom: 0px;
-        width: 100%;
     }
     
     .centered-subtitle {
-        text-align: center !important;
+        text-align: center;
         color: #94a3b8;
         font-size: 14px;
         margin-top: 5px;
-        width: 100%;
-        display: block;
     }
 
     /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل */
@@ -67,7 +64,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان والوصف في المنتصف تماماً
+# 2. العنوان في المنتصف تماماً
 st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -122,8 +119,8 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# شريط الأدوات المنظم في منتصف الشاشة
-_, col_btn1, col_btn2, col_btn3, _ = st.columns([1, 1, 1, 1.5, 1])
+# توسيط شريط الأدوات بالكامل في منتصف الشاشة
+_, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
 
 with col_btn1:
     if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
@@ -143,15 +140,12 @@ with col_btn2:
     )
 
 with col_btn3:
-    selected_sugg = st.selectbox(
-        "💡 أسئلة مقترحة",
-        options=["اختر سؤالاً مقترحاً..."] + st.session_state.random_suggestions,
-        key="suggestion_dropdown",
-        label_visibility="collapsed"
-    )
-    if selected_sugg and selected_sugg != "اختر سؤالاً مقترحاً...":
-        st.session_state.messages.append({"role": "user", "content": selected_sugg})
-        st.rerun()
+    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
+        st.markdown("**أسئلة مقترحة:**")
+        for q in st.session_state.random_suggestions:
+            if st.button(q, use_container_width=True, key=f"sugg_{q}"):
+                st.session_state.messages.append({"role": "user", "content": q})
+                st.rerun()
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -161,19 +155,19 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع استخدام النموذج المستقر وتأثير الكتابة
+# الآلية الموحدة للرد التلقائي مع استخراج النص السليم من الـ stream
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
-            client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-            stream = client.chat.completions.create(
+            stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                 messages=st.session_state.messages,
-                model="llama-3.3-70b-versatile",  # نموذج مستقر وعالي الكفاءة
+                model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=4000,
                 stream=True,
             )
             
+            # دالة مولدة لاستخراج المحتوى النصي الفعلي من كتل البيانات
             def response_generator():
                 for chunk in stream:
                     if chunk.choices[0].delta.content is not None:
@@ -182,7 +176,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             answer = st.write_stream(response_generator())
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
-            st.error(f"حدث خطأ في الاتصال بالنموذج: {e}")
+            st.error(f"حدث خطأ شبكي: {e}")
 
 # صندوق الإدخال التقليدي
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
@@ -194,6 +188,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
