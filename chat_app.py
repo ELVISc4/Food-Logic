@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
+# --- التنسيقات البصرية المتقدمة وتوسيط النصوص وإصلاح المحاذاة ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -23,19 +23,22 @@ st.markdown("""
     [data-testid="stHeader"] { display: none !important; }
     [data-testid="stSidebar"] { display: none !important; }
 
-    /* توسيط العنوان الرئيسي */
+    /* توسيط العنوان الرئيسي والوصف بدقة تامة */
     .centered-title {
-        text-align: center;
+        text-align: center !important;
         font-weight: 700;
         color: #ffffff;
         margin-bottom: 0px;
+        width: 100%;
     }
     
     .centered-subtitle {
-        text-align: center;
+        text-align: center !important;
         color: #94a3b8;
         font-size: 14px;
         margin-top: 5px;
+        width: 100%;
+        display: block;
     }
 
     /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل */
@@ -64,7 +67,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان في المنتصف تماماً
+# 2. العنوان والوصف في المنتصف تماماً
 st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -119,8 +122,8 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# توسيط شريط الأدوات بالكامل في منتصف الشاشة
-_, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
+# شريط الأدوات المنظم في منتصف الشاشة (مسح، حفظ، واختيار مقترح يغلق تلقائياً)
+_, col_btn1, col_btn2, col_btn3, _ = st.columns([1, 1, 1, 1.5, 1])
 
 with col_btn1:
     if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
@@ -140,12 +143,16 @@ with col_btn2:
     )
 
 with col_btn3:
-    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
-        st.markdown("**أسئلة مقترحة:**")
-        for q in st.session_state.random_suggestions:
-            if st.button(q, use_container_width=True, key=f"sugg_{q}"):
-                st.session_state.messages.append({"role": "user", "content": q})
-                st.rerun()
+    # استخدام selectbox بدلاً من popover لكي تغلق القائمة تلقائياً فور اختيار السؤال
+    selected_sugg = st.selectbox(
+        "💡 أسئلة مقترحة",
+        options=["اختر سؤالاً مقترحاً..."] + st.session_state.random_suggestions,
+        key="suggestion_dropdown",
+        label_visibility="collapsed"
+    )
+    if selected_sugg and selected_sugg != "اختر سؤالاً مقترحاً...":
+        st.session_state.messages.append({"role": "user", "content": selected_sugg})
+        st.rerun()
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -155,7 +162,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع استخراج النص السليم من الـ stream
+# الآلية الموحدة للرد التلقائي مع تفعيل أنيميشن الكتابة التدريجية (Streaming Typing Effect)
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
@@ -163,11 +170,10 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=4000,
+                max_tokens=1024,
                 stream=True,
             )
             
-            # دالة مولدة لاستخراج المحتوى النصي الفعلي من كتل البيانات
             def response_generator():
                 for chunk in stream:
                     if chunk.choices[0].delta.content is not None:
@@ -188,6 +194,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
