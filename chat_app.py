@@ -61,53 +61,53 @@ if "messages" not in st.session_state:
         {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
     ]
 
-# شريط أدوات علوي منظم (مسح، حفظ، وأسئلة مقترحة)
-col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+# توسيط شريط الأدوات بالكامل في منتصف الشاشة
+_, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
 
-with col2:
+with col_btn1:
     if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
         st.session_state.messages = [
             {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
         ]
         st.rerun()
 
-with col3:
+with col_btn2:
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button(
         label="📥 حفظ",
         data=chat_export,
         file_name="nutri_chat_history.txt",
         mime="text/plain",
-        help="تصدير وتحميل المحادثة",
+        help="تصدير المحادثة",
         use_container_width=True
     )
 
-with col4:
-    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
+with col_btn3:
+    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية متنوعة"):
         st.markdown("**اختر سؤالاً استراتيجياً:**")
-        if st.button("كيف أتحكم في نشاط الماء ($a_w$) للحفاظ على صلاحية المنتج؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "كيف أتحكم في نشاط الماء (aw) للحفاظ على صلاحية المنتج؟"})
+        if st.button("كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟"})
             st.rerun()
-        if st.button("ما هي خطوات تطبيق نظام HACCP بخطوط إنتاج الأغذية؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "ما هي خطوات تطبيق نظام HACCP بخطوط إنتاج الأغذية؟"})
+        if st.button("ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟"})
             st.rerun()
-        if st.button("ما تأثير تفاعلات ميلارد على جودة الأغذية؟", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": "ما تأثير تفاعلات ميلارد على جودة الأغذية؟"})
+        if st.button("كيف نتحكم في نشاط الماء ($a_w$) لمنع تلف الأغذية؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "كيف نتحكم في نشاط الماء (aw) لمنع تلف الأغذية؟"})
+            st.rerun()
+        if st.button("ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟", use_container_width=True):
+            st.session_state.messages.append({"role": "user", "content": "ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟"})
             st.rerun()
 
-# عرض رسائل الشات
+st.markdown("<br>", unsafe_allow_html=True)
+
+# عرض رسائل الشات السابقة
 for msg in st.session_state.messages:
     if msg["role"] != "system":
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-user_input = st.chat_input("اسأل Nutri عن كيمياء الأغذية والتصنيع...")
-
-if user_input:
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    st.session_state.messages.append({"role": "user", "content": user_input})
-
+# الآلية الموحدة للرد: سواء كتب المستخدم أو ضغط على زر مقترح
+if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
         try:
@@ -123,9 +123,16 @@ if user_input:
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
 
+# صندوق الإدخال التقليدي
+user_input = st.chat_input("اسأل Nutri عن كيمياء الأغذية والتصنيع...")
+
+if user_input:
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.rerun()
+
 # 4. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
