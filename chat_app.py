@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات (CSS Fix) ---
+# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -38,7 +38,7 @@ st.markdown("""
         margin-top: 5px;
     }
 
-    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل لمنع أي تداخل أو مسافات شاذة */
+    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل */
     .stMarkdown, .stChatMessage, p, span, div, li, ul, ol {
         direction: rtl !important;
         text-align: right !important;
@@ -106,7 +106,7 @@ if "messages" not in st.session_state:
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# 4. بنك الأسئلة وتثبيت المقترحات في الذاكرة لضمان الاستجابة الفورية
+# 4. بنك الأسئلة وتثبيت المقترحات في الذاكرة
 question_bank = [
     "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
     "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
@@ -155,7 +155,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع تفعيل أنيميشن الكتابة التدريجية (Streaming Typing Effect)
+# الآلية الموحدة للرد التلقائي مع استخراج النص السليم من الـ stream
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
@@ -163,10 +163,17 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=1024,
+                max_tokens=4000,
                 stream=True,
             )
-            answer = st.write_stream(stream)
+            
+            # دالة مولدة لاستخراج المحتوى النصي الفعلي من كتل البيانات
+            def response_generator():
+                for chunk in stream:
+                    if chunk.choices[0].delta.content is not None:
+                        yield chunk.choices[0].delta.content
+
+            answer = st.write_stream(response_generator())
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
@@ -181,6 +188,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed with 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
