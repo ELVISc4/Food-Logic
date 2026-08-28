@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية CSS المتقدمة مع ضبط اتجاه القوائم والنصوص ---
+# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات (CSS Fix) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -38,21 +38,23 @@ st.markdown("""
         margin-top: 5px;
     }
 
-    /* ضبط اتجاه النصوص العربية والإنجليزية وقوائم النقاط بدقة */
-    .stChatMessage {
-        direction: rtl !important;
-        text-align: right !important;
-    }
-    
-    .stChatMessage p, .stChatMessage li, .stChatMessage span, .stChatMessage div {
+    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل لمنع أي تداخل أو مسافات شاذة */
+    .stMarkdown, .stChatMessage, p, span, div, li, ul, ol {
         direction: rtl !important;
         text-align: right !important;
     }
 
+    /* ضبط مسافات وترتيب قوائم النقاط والترقيم للغة العربية */
     ul, ol {
-        text-align: right !important;
         padding-right: 20px !important;
         padding-left: 0px !important;
+        margin-right: 0px !important;
+    }
+
+    li {
+        text-align: right !important;
+        list-style-position: inside !important;
+        margin-bottom: 6px;
     }
 
     /* تنسيق صندوق الإدخال */
@@ -67,7 +69,7 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. اختيار مجال الاستشارة (بدون اختيار مسبق، مع خيار عام افتراضي)
+# 3. اختيار مجال الاستشارة
 domains = [
     "استشارة عامة في الأغذية",
     "كيمياء وتحليل الأغذية",
@@ -104,7 +106,7 @@ if "messages" not in st.session_state:
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# 4. بنك الأسئلة وتثبيت المقترحات في الذاكرة لضمان الاستجابة السريعة للضغطات
+# 4. بنك الأسئلة وتثبيت المقترحات في الذاكرة لضمان الاستجابة الفورية
 question_bank = [
     "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
     "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
@@ -161,7 +163,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=4000,
+                max_tokens=1024,
                 stream=True,
             )
             answer = st.write_stream(stream)
