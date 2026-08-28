@@ -4,7 +4,7 @@ from groq import Groq
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية CSS المتقدمة (خط Cairo، تحسين الشات، وتوسيط العنوان) ---
+# --- التنسيقات البصرية CSS المتقدمة (إخفاء شريط المنصة العلوي وتنسيق الخطوط) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -13,7 +13,16 @@ st.markdown("""
         font-family: 'Cairo', sans-serif !important;
     }
 
-    /* توسيط العنوان الرئيسي بشكل احترافي */
+    /* إخفاء شريط المنصة العلوي بالكامل (الأيقونات، GitHub، Share، القائمة) */
+    [data-testid="stHeader"] {
+        display: none !important;
+    }
+
+    /* إخفاء العلامة المائية الافتراضية لمنصة سตรีمليت من الأسفل إن وجدت */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+
+    /* توسيط العنوان الرئيسي */
     .centered-title {
         text-align: center;
         font-weight: 700;
@@ -38,12 +47,11 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. الشريط الجانبي للإعدادات الذكية (Clean Cache & Controls)
+# 3. الشريط الجانبي للإعدادات الذكية (مخفي افتراضياً ولا يظهر إلا عند الحاجة لمسح الشات)
 with st.sidebar:
     st.markdown("### ⚙️ لوحة التحكم")
     st.markdown("---")
     
-    # زر مسح الذاكرة (Clear Cache / Reset Chat)
     if st.button("🗑️ مسح المحادثة (Clear Chat)", use_container_width=True):
         st.session_state.messages = [
             {"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي في تكنولوجيا وتصنيع الأغذية. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق ومنظم كالمهندس."}
@@ -94,6 +102,6 @@ if user_input:
 # 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: gray; font-family: Cairo; font-size: 13px;'>Designed & Developed  🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p style='text-align: center; color: gray; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
