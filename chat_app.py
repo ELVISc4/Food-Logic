@@ -1,8 +1,33 @@
 import streamlit as st
 from groq import Groq
 
-# 1. إعداد الواجهة والاسم
-st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏")
+# 1. إعداد الواجهة والاسم مع تفعيل التصميم الاحترافي
+st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
+
+# --- تنسيقات CSS لحل مشاكل الخطوط، الاتجاه، والتداخل (RTL & Typography) ---
+st.markdown("""
+    <style>
+    /* تغيير الخط الافتراضي بالكامل إلى خط عصري ونظيف */
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Cairo', sans-serif !important;
+    }
+
+    /* ضبط اتجاه النصوص العربية لتكون من اليمين لليسار ومنع تداخل الإنجليزي */
+    .stChatMessage, .stTextInput, p, span, div {
+        direction: rtl;
+        text-align: right;
+    }
+
+    /* تخصيص صندوق الإدخال وجعله أكثر مرونة وجمالاً */
+    .stChatInputContainer {
+        border-radius: 12px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# عنوان التطبيق
 st.title("🍏 Nutri - AI Advisor")
 
 # 2. قراءة المفتاح بأمان من إعدادات المنصة السحابية
@@ -44,6 +69,6 @@ if user_input:
 # --- توقيعك الهندسي المباشر أسفل الصفحة ---
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: gray;'>Designed & Developed with 🚀 by <b>Hazem EL-Helw</b></p>", 
+    "<p style='text-align: center; color: gray; font-family: Cairo;'>Designed & Developed 🚀 by <b>Leader Elvis</b></p>", 
     unsafe_allow_html=True
 )
