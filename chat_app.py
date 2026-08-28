@@ -56,33 +56,44 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. اختيار مجال الاستشارة التخصصي (بدون مصطلحات معقدة ومجالات أوسع)
+# 3. اختيار مجال الاستشارة (بدون اختيار مسبق، مع خيار عام افتراضي)
+domains = [
+    "استشارة عامة في الأغذية",
+    "كيمياء وتحليل الأغذية",
+    "سلامة وصحة الغذاء وتأمين الجودة",
+    "هندسة وتصنيع خطوط الإنتاج",
+    "التغذية البشرية والتغذية العلاجية",
+    "تطوير المنتجات والابتكار الغذائي",
+    "ميكروبيولوجيا والأحياء الدقيقة للأغذية"
+]
+
 domain = st.selectbox(
     "اختر مجال الاستشارة التخصصي:",
-    [
-        "كيمياء وتحليل الأغذية",
-        "سلامة وصحة الغذاء وتأمين الجودة",
-        "هندسة وتصنيع خطوط الإنتاج",
-        "التغذية البشرية والتغذية العلاجية",
-        "تطوير المنتجات والابتكار الغذائي",
-        "ميكروبيولوجيا والأحياء الدقيقة للأغذية"
-    ],
+    options=domains,
+    index=None,
+    placeholder="اختر المجال أو اتركه عاماً...",
     key="expert_domain"
 )
 
-# تعزيز الالتزام التام بالمجال المختار في دستور النظام (System Prompt)
-system_prompt = (
-    f"أنت 'Nutri'، خبير ومستشار ذكي متخصص حصرياً وفي العمق في مجال: '{domain}'. "
-    f"يجب أن تكون إجاباتك موجهة وممركزة بشكل كامل وصرام حول هذا المجال المحدد فقط، وتجنب الخروج عنه إلا لربطه بالسياق المباشر. "
-    f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً للمرضى بل استشارات تخصصية. أسلوبك: دقيق، علمي، ومنظم كالمهندس."
-)
+# تحديد دستور النظام بناءً على اختيار المستخدم أو الوضع العام
+if domain:
+    system_prompt = (
+        f"أنت 'Nutri'، خبير ومستشار ذكي متخصص في مجال: '{domain}'. "
+        f"وجه إجاباتك بناءً على هذا التخصص بدقة علمية وهندسية عالية. "
+        f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم."
+    )
+else:
+    system_prompt = (
+        f"أنت 'Nutri'، خبير ومستشار ذكي عام في تكنولوجيا وتصنيع الأغذية وكيمياءها. "
+        f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم كالمهندس."
+    )
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": system_prompt}]
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# 4. بنك الأسئلة المتنوعة بدون اختصارات وبناءً على المجالات المحدثة
+# 4. بنك الأسئلة المتنوعة لتتجدد عشوائياً مع كل تحديث (Refresh)
 question_bank = [
     "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
     "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
@@ -129,25 +140,26 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع التركيز الصارم على المجال
+# الآلية الموحدة للرد التلقائي مع إضافة أنيميشن التفكير (Spinner)
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        response_placeholder = st.empty()
-        try:
-            chat_completion = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
-                messages=st.session_state.messages,
-                model="qwen/qwen3.8-27b",
-                temperature=0.2,
-                max_tokens=1024,
-            )
-            answer = chat_completion.choices[0].message.content
-            response_placeholder.markdown(answer)
-            st.session_state.messages.append({"role": "assistant", "content": answer})
-        except Exception as e:
-            st.error(f"حدث خطأ شبكي: {e}")
+        with st.spinner("Nutri يحلل البيانات ويفكر بطريقة هندسية... 🍏"):
+            try:
+                chat_completion = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+                    messages=st.session_state.messages,
+                    model="qwen/qwen3.8-27b",
+                    temperature=0.2,
+                    max_tokens=1024,
+                )
+                answer = chat_completion.choices[0].message.content
+            except Exception as e:
+                answer = f"حدث خطأ شبكي: {e}"
+        
+        st.markdown(answer)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
 
 # صندوق الإدخال التقليدي
-user_input = st.chat_input("اسأل Nutri عن تخصصك المختار...")
+user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
