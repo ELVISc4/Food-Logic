@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- التنسيقات البصرية CSS المتقدمة (خلفية متدرجة، خط Cairo، وتوسيط العناصر) ---
+# --- التنسيقات البصرية CSS المتقدمة ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -56,33 +56,42 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. اختيار مجال التخصص (Expertise Mode Selector)
+# 3. اختيار مجال الاستشارة التخصصي (بدون مصطلحات معقدة ومجالات أوسع)
 domain = st.selectbox(
     "اختر مجال الاستشارة التخصصي:",
-    ["كيمياء وتحليل الأغذية", "سلامة وصحة الغذاء (HACCP)", "هندسة وتصنيع الأغذية (مشروع SPECS)"],
+    [
+        "كيمياء وتحليل الأغذية",
+        "سلامة وصحة الغذاء وتأمين الجودة",
+        "هندسة وتصنيع خطوط الإنتاج",
+        "التغذية البشرية والتغذية العلاجية",
+        "تطوير المنتجات والابتكار الغذائي",
+        "ميكروبيولوجيا والأحياء الدقيقة للأغذية"
+    ],
     key="expert_domain"
 )
 
-system_prompt = f"أنت 'Nutri'، خبير ومستشار ذكي متخصص في {domain}. حدودك الصارمة: لا تقدم تشخيصاً طبياً. أسلوبك: دقيق، علمي، ومنظم كالمهندس."
+# تعزيز الالتزام التام بالمجال المختار في دستور النظام (System Prompt)
+system_prompt = (
+    f"أنت 'Nutri'، خبير ومستشار ذكي متخصص حصرياً وفي العمق في مجال: '{domain}'. "
+    f"يجب أن تكون إجاباتك موجهة وممركزة بشكل كامل وصرام حول هذا المجال المحدد فقط، وتجنب الخروج عنه إلا لربطه بالسياق المباشر. "
+    f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً للمرضى بل استشارات تخصصية. أسلوبك: دقيق، علمي، ومنظم كالمهندس."
+)
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": system_prompt}]
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# 4. بنك الأسئلة المتنوعة لتتجدد عشوائياً مع كل تحديث (Refresh / Rerun) للويب
+# 4. بنك الأسئلة المتنوعة بدون اختصارات وبناءً على المجالات المحدثة
 question_bank = [
-    "كيف نصمم نظام طلاء بخاخ (Spray Coating) لإطالة عمر الفاكهة؟",
-    "ما هي الآلية الكيميائية لتفاعلات ميلارد (Maillard Reaction)؟",
-    "كيف نتحكم في نشاط الماء (aw) لمنع تلف الأغذية؟",
-    "ما هي النقاط الحرجة لتطبيق نظام HACCP بخطوط الإنتاج؟",
-    "ما تأثير درجات حرارة البسترة على الفيتامينات الحساسة؟",
-    "كيف نحسب الكفاءة الحرارية لأنظمة التعقيم التجاري؟",
-    "ما هي أحدث تقنيات التغليف النشط (Active Packaging) للأغذية؟",
-    "كيف نتجنب نمو البكتيريا اللاهوائية في الأغذية المعلبة؟"
+    "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
+    "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
+    "كيف يتم تصميم وتطوير خطوط إنتاج وتعبئة الأغذية بكفاءة عالية؟",
+    "ما هي تأثيرات عمليات الحفظ والحرارة على القيمة الغذائية للمنتج؟",
+    "كيف نبتكر وصفات وتركيبات (Formulation) جديدة تناسب متطلبات الأسواق؟",
+    "ما هي الطرق العلمية المتبعة للسيطرة على نمو الميكروبات وفساد الأغذية؟"
 ]
 
-# اختيار 3 أسئلة عشوائية جديدة مع كل إعادة تحميل للصفحة
 random_suggestions = random.sample(question_bank, 3)
 
 # توسيط شريط الأدوات بالكامل في منتصف الشاشة
@@ -120,7 +129,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي
+# الآلية الموحدة للرد التلقائي مع التركيز الصارم على المجال
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
@@ -138,7 +147,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             st.error(f"حدث خطأ شبكي: {e}")
 
 # صندوق الإدخال التقليدي
-user_input = st.chat_input("اسأل Nutri عن كيمياء الأغذية والتصنيع...")
+user_input = st.chat_input("اسأل Nutri عن تخصصك المختار...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
