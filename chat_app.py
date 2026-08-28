@@ -122,7 +122,7 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# شريط الأدوات المنظم في منتصف الشاشة (مسح، حفظ، واختيار مقترح يغلق تلقائياً)
+# شريط الأدوات المنظم في منتصف الشاشة
 _, col_btn1, col_btn2, col_btn3, _ = st.columns([1, 1, 1, 1.5, 1])
 
 with col_btn1:
@@ -143,7 +143,6 @@ with col_btn2:
     )
 
 with col_btn3:
-    # استخدام selectbox بدلاً من popover لكي تغلق القائمة تلقائياً فور اختيار السؤال
     selected_sugg = st.selectbox(
         "💡 أسئلة مقترحة",
         options=["اختر سؤالاً مقترحاً..."] + st.session_state.random_suggestions,
@@ -162,13 +161,14 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع تفعيل أنيميشن الكتابة التدريجية (Streaming Typing Effect)
+# الآلية الموحدة للرد التلقائي مع استخدام النموذج المستقر وتأثير الكتابة
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
-            stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+            client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+            stream = client.chat.completions.create(
                 messages=st.session_state.messages,
-                model="qwen/qwen3.8-27b",
+                model="llama-3.3-70b-versatile",  # نموذج مستقر وعالي الكفاءة
                 temperature=0.2,
                 max_tokens=1024,
                 stream=True,
@@ -182,7 +182,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             answer = st.write_stream(response_generator())
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
-            st.error(f"حدث خطأ شبكي: {e}")
+            st.error(f"حدث خطأ في الاتصال بالنموذج: {e}")
 
 # صندوق الإدخال التقليدي
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
