@@ -17,7 +17,7 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
-# --- تطبيق الهوية البصرية وتصحيح الألوان ---
+# --- تطبيق الهوية البصرية ---
 if st.session_state.theme == "dark":
     bg_gradient = "radial-gradient(circle at center, #061c11 0%, #090a0f 60%, #050505 100%)"
     solid_bg = "#090a0f"
@@ -25,7 +25,7 @@ if st.session_state.theme == "dark":
     sub_text_color = "#94a3b8"
     btn_bg = "#0f172a"
     btn_border = "#166534" 
-    chat_user_bg = "rgba(255, 255, 255, 0.03)" # شفافية خفيفة جداً لرسالة المستخدم
+    chat_user_bg = "rgba(255, 255, 255, 0.03)" 
 else:
     bg_gradient = "radial-gradient(circle at center, #ffffff 0%, #f4fdf8 40%, #d1fae5 100%)"
     solid_bg = "#ffffff"
@@ -33,7 +33,7 @@ else:
     sub_text_color = "#475569"
     btn_bg = "#ffffff"
     btn_border = "#a7f3d0"
-    chat_user_bg = "rgba(255, 255, 255, 0.6)" # خلفية زجاجية فاتحة لرسالة المستخدم
+    chat_user_bg = "rgba(255, 255, 255, 0.6)" 
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
@@ -108,7 +108,7 @@ with col_save:
         use_container_width=True
     )
 
-# --- التنسيقات البصرية والأنيميشن وإصلاح الخلفيات ---
+# --- التنسيقات البصرية والأنيميشن الخاص بالرسائل ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -118,25 +118,24 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
+    [data-testid="stBottom"] {{ background-color: transparent !important; }}
+    [data-testid="stBottom"] > div {{ background-color: transparent !important; }}
+
     /* ------------------------------------------------------------------ */
-    /* إصلاح خلفية الرسائل والشريط السفلي (The UI Fix)                    */
+    /* 1. أنيميشن الانزلاق والظهور الناعم لرسائل الشات (Smooth Fade-in)   */
     /* ------------------------------------------------------------------ */
-    
-    /* جعل الحاوية السفلية لشريط الإدخال شفافة لتظهر الخلفية الأصلية */
-    [data-testid="stBottom"] {{
-        background-color: transparent !important;
-    }}
-    [data-testid="stBottom"] > div {{
-        background-color: transparent !important;
+    @keyframes smoothFadeIn {{
+        0% {{ opacity: 0; transform: translateY(20px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* تظبيط لون خلفية رسالة المستخدم لتكون زجاجية وتلغي اللون الرمادي المزعج */
     div[data-testid="stChatMessage"] {{
-        background-color: transparent !important; /* إلغاء الافتراضي */
+        background-color: transparent !important;
         border-radius: 15px;
         padding: 10px;
+        animation: smoothFadeIn 0.6s ease-out forwards; /* تطبيق الأنيميشن هنا */
     }}
-    /* تخصيص رسالة المستخدم تحديداً */
+    
     div[data-testid="stChatMessage"]:nth-child(even) {{
         background-color: {chat_user_bg} !important;
         border: 1px solid {btn_border} !important;
@@ -154,28 +153,9 @@ st.markdown(f"""
         100% {{ transform: translateY(0); opacity: 1; }}
     }}
 
-    .animated-header {{
-        text-align: center !important;
-        font-weight: 700 !important;
-        color: {text_color} !important;
-        margin-bottom: 0px !important;
-        direction: rtl !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-    }}
-
-    .apple-icon {{
-        display: inline-block;
-        animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }}
-
-    .nutri-text {{
-        display: inline-block;
-        opacity: 0;
-        animation: slideInUp 0.8s ease-out 0.4s forwards;
-    }}
+    .animated-header {{ text-align: center !important; font-weight: 700 !important; color: {text_color} !important; margin-bottom: 0px !important; direction: rtl !important; display: flex; justify-content: center; align-items: center; gap: 10px; }}
+    .apple-icon {{ display: inline-block; animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }}
+    .nutri-text {{ display: inline-block; opacity: 0; animation: slideInUp 0.8s ease-out 0.4s forwards; }}
 
     .stMarkdown .centered-subtitle {{ text-align: center !important; color: {sub_text_color} !important; font-size: 14px !important; margin-top: 5px !important; direction: rtl !important; }}
     .stMarkdown .centered-footer {{ text-align: center !important; color: #64748b !important; font-size: 13px !important; direction: ltr !important; }}
@@ -205,7 +185,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان مع الأنيميشن
+# 2. العنوان
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("""
     <h1 class='animated-header'>
@@ -252,7 +232,7 @@ st.session_state.messages[0]["content"] = system_prompt
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = get_smart_suggestions()
 
-# 4. عرض الأسئلة المقترحة وزر التحديث
+# 4. عرض الأسئلة المقترحة
 if len(st.session_state.messages) == 1:
     st.markdown("<br>", unsafe_allow_html=True)
     col_sugg_text, col_sugg_refresh = st.columns([5, 1])
@@ -274,10 +254,9 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# 6. الآلية للرد التلقائي مع مؤشر التحميل (Spinner)
+# 6. الرد التلقائي مع الـ Spinner
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        # وضعنا الدائرة الدوارة هنا لتعطي استجابة فورية للمستخدم
         with st.spinner("Nutri يحلل البيانات ويصيغ الرد... ⏳"):
             try:
                 stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
@@ -293,7 +272,6 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                         if chunk.choices[0].delta.content is not None:
                             yield chunk.choices[0].delta.content
 
-                # بمجرد أن يبدأ الـ Stream، سيختفي الـ Spinner تلقائياً ويظهر النص
                 answer = st.write_stream(response_generator())
                 st.session_state.messages.append({"role": "assistant", "content": answer})
             except Exception as e:
