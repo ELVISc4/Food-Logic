@@ -19,30 +19,38 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
-# --- الألوان والصناديق ---
+# --- هندسة الألوان الصلبة (Solid Colors) لصناديق الرسائل ---
 if st.session_state.theme == "dark":
     bg_gradient = "radial-gradient(circle at center, #061c11 0%, #090a0f 60%, #050505 100%)"
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     btn_bg = "#0f172a"
     btn_border = "#166534" 
-    assistant_bg = "rgba(15, 23, 42, 0.7)" # خلفية صندوق لوسي في الدارك
-    chat_user_bg = "rgba(255, 255, 255, 0.05)" # خلفية صندوق المستخدم في الدارك
+    
+    # ألوان الشات في الدارك مود
+    user_msg_bg = "#dcf8c6" # أخضر واتساب فاتح واضح جداً
+    user_msg_text = "#000000" # نص أسود لضمان الوضوح
+    bot_msg_bg = "#1e293b" # لون داكن جداً لرسائل نيوتري
+    bot_msg_text = "#ffffff" # نص أبيض ناصع
 else:
     bg_gradient = "radial-gradient(circle at center, #ffffff 0%, #f4fdf8 40%, #d1fae5 100%)"
     text_color = "#0f172a"
     sub_text_color = "#475569"
     btn_bg = "#ffffff"
     btn_border = "#a7f3d0"
-    assistant_bg = "rgba(255, 255, 255, 0.9)" # خلفية صندوق لوسي في اللايت
-    chat_user_bg = "rgba(209, 250, 229, 0.3)" # خلفية صندوق المستخدم في اللايت (أخضر خفيف جداً)
+    
+    # ألوان الشات في اللايت مود
+    user_msg_bg = "#dcf8c6" # أخضر واتساب فاتح
+    user_msg_text = "#000000" # نص أسود
+    bot_msg_bg = "#0f172a" # لون كحلي/رمادي داكن جداً لرسائل نيوتري
+    bot_msg_text = "#ffffff" # نص أبيض ناصع
 
-# --- بناء الهوية الاستراتيجية الصارمة (System Override) ---
+# --- بناء الهوية الاستراتيجية الصارمة لـ Nutri ---
 base_identity = (
-    "اسمك هو 'لوسي' (Lucy). أنتِ مستشارة ذكية ومتقدمة. "
+    "اسمك هو 'نيوتري' (Nutri). أنت مستشار ذكي ومتقدم. "
     "تم تطويرك وبرمجتك حصرياً بواسطة التكنولوجست 'حازم الحلو' بهدف نشر الوعي والتطوير في الصناعات الغذائية. "
-    "تعليمات صارمة جداً: إذا سألك أي شخص عن هويتك، ما اسمك، من صنعك، أو أي سؤال مشابه، يجب أن تجيبي بهذه الهوية فقط. "
-    "يُمنع منعاً باتاً ذكر كلمات مثل (Qwen، Tongyi Lab، Alibaba، أو أي نماذج لغوية أخرى). كوني فخورة بهويتك الجديدة كـ 'لوسي'. "
+    "تعليمات صارمة جداً: إذا سألك أي شخص عن هويتك، ما اسمك، من صنعك، أو أي سؤال مشابه، يجب أن تجيب بهذه الهوية فقط كـ 'Nutri'. "
+    "يُمنع منعاً باتاً ذكر كلمات مثل (Qwen، Tongyi Lab، Alibaba، أو أي نماذج لغوية أخرى). كن فخوراً بهويتك الجديدة. "
 )
 
 if "messages" not in st.session_state:
@@ -50,7 +58,7 @@ if "messages" not in st.session_state:
 
 def get_smart_suggestions():
     general = [
-        "من أنتِ ومن قام بتطويرك؟", # سؤال مضاف لاختبار الهوية
+        "من أنت ومن قام بتطويرك؟", 
         "ما هي أفضل الأنظمة الغذائية لزيادة التركيز خلال اليوم؟",
         "كيف يمكنني حساب احتياجاتي من البروتين والكربوهيدرات؟",
         "كيف أقرأ البطاقة الغذائية (Nutrition Facts) بشكل صحيح؟",
@@ -75,7 +83,7 @@ with col_theme:
 with col_clear:
     if st.button("🗑️ مسح", use_container_width=True):
         domain = st.session_state.get("expert_domain", "")
-        domain_prompt = f"أنتِ أيضاً خبيرة متخصصة في: {domain}." if domain else "أنتِ خبيرة في التغذية العامة وتكنولوجيا الأغذية."
+        domain_prompt = f"أنت أيضاً خبير متخصص في: {domain}." if domain else "أنت خبير في التغذية العامة وتكنولوجيا الأغذية."
         st.session_state.messages = [{"role": "system", "content": base_identity + domain_prompt}]
         st.session_state.random_suggestions = get_smart_suggestions()
         st.rerun()
@@ -84,7 +92,7 @@ with col_save:
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button("📥 حفظ", data=chat_export, file_name="nutri_chat.txt", mime="text/plain", use_container_width=True)
 
-# --- التنسيقات البصرية لهندسة صناديق الرسائل (Chat Bubbles) ---
+# --- التنسيقات البصرية لهندسة صناديق الرسائل بدون حدود ومُشبعة بالألوان ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -93,28 +101,53 @@ st.markdown(f"""
     [data-testid="stHeader"], [data-testid="stSidebar"] {{ display: none !important; }}
     [data-testid="stBottom"], [data-testid="stBottom"] > div {{ background-color: transparent !important; }}
 
-    /* هندسة صناديق الرسائل بشكل احترافي */
-    div[data-testid="stChatMessage"] {{ 
-        background-color: {assistant_bg} !important; 
-        border: 1px solid {btn_border} !important; 
-        border-radius: 12px; 
-        padding: 15px; 
-        margin-bottom: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* تظليل ناعم يعطي عمق 3D */
+    /* هندسة صناديق الرسائل (Chat Bubbles) - إزالة الحدود واستخدام الألوان الصلبة */
+    @keyframes smoothFadeIn {{
+        0% {{ opacity: 0; transform: translateY(20px); }}
+        100% {{ opacity: 1; transform: translateY(0); }}
     }}
+
+    div[data-testid="stChatMessage"] {{ 
+        border: none !important; /* إزالة الحدود تماماً */
+        border-radius: 18px; 
+        padding: 15px 20px; 
+        margin-bottom: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* تظليل ناعم */
+        animation: smoothFadeIn 0.5s ease-out forwards;
+    }}
+    
+    /* رسالة المستخدم (الرسائل الفردية في الترتيب) */
+    div[data-testid="stChatMessage"]:nth-child(odd) {{ 
+        background-color: {user_msg_bg} !important; 
+    }}
+    div[data-testid="stChatMessage"]:nth-child(odd) p,
+    div[data-testid="stChatMessage"]:nth-child(odd) li {{ 
+        color: {user_msg_text} !important; 
+        font-weight: 600;
+    }}
+
+    /* رسالة Nutri (الرسائل الزوجية في الترتيب) */
     div[data-testid="stChatMessage"]:nth-child(even) {{ 
-        background-color: {chat_user_bg} !important; 
+        background-color: {bot_msg_bg} !important; 
+    }}
+    div[data-testid="stChatMessage"]:nth-child(even) p,
+    div[data-testid="stChatMessage"]:nth-child(even) li,
+    div[data-testid="stChatMessage"]:nth-child(even) h1,
+    div[data-testid="stChatMessage"]:nth-child(even) h2,
+    div[data-testid="stChatMessage"]:nth-child(even) h3,
+    div[data-testid="stChatMessage"]:nth-child(even) strong {{ 
+        color: {bot_msg_text} !important; 
     }}
     
     .animated-header {{ text-align: center !important; font-weight: 700 !important; color: {text_color} !important; margin-bottom: 0px !important; direction: rtl !important; display: flex; justify-content: center; align-items: center; gap: 10px; }}
     @keyframes popIn {{ 0% {{ transform: scale(0) rotate(-15deg); opacity: 0; }} 70% {{ transform: scale(1.2) rotate(10deg); opacity: 1; }} 100% {{ transform: scale(1) rotate(0deg); opacity: 1; }} }}
     .apple-icon {{ display: inline-block; animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }}
     
-    .stMarkdown p, .stChatMessage p, li, ul, ol {{ direction: rtl; text-align: right; color: {text_color} !important; }}
+    .stMarkdown p, .stChatMessage p, li, ul, ol {{ direction: rtl; text-align: right; }}
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, h4, h5, h6 {{ color: {text_color} !important; direction: rtl; text-align: right; }}
-    table {{ width: 100% !important; color: {text_color} !important; border-collapse: collapse !important; margin-bottom: 15px !important; }}
-    th, td {{ border: 1px solid {btn_border} !important; color: {text_color} !important; padding: 8px !important; text-align: right !important; direction: rtl !important; background-color: transparent !important; }}
-    th {{ background-color: {btn_bg} !important; font-weight: 700 !important; }}
+    table {{ width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; }}
+    th, td {{ border: 1px solid rgba(150, 150, 150, 0.2) !important; padding: 8px !important; text-align: right !important; direction: rtl !important; background-color: transparent !important; }}
+    th {{ font-weight: 700 !important; }}
     
     .stButton > button {{ background-color: {btn_bg} !important; color: {text_color} !important; border: 1px solid {btn_border} !important; }}
     div[data-testid="stSelectbox"] label p {{ direction: rtl !important; text-align: right !important; color: {text_color} !important; }}
@@ -146,8 +179,7 @@ domain = st.selectbox(
     key="expert_domain"
 )
 
-# تحديث الـ Prompt مع دمج الهوية والمجال
-domain_prompt = f"أنتِ أيضاً خبيرة متخصصة في: {domain}." if domain else "أنتِ خبيرة في التغذية العامة وتكنولوجيا الأغذية."
+domain_prompt = f"أنت أيضاً خبير متخصص في: {domain}." if domain else "أنت خبير في التغذية العامة وتكنولوجيا الأغذية."
 st.session_state.messages[0]["content"] = base_identity + domain_prompt
 
 if "random_suggestions" not in st.session_state:
@@ -174,7 +206,7 @@ for msg in st.session_state.messages:
 
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        with st.spinner("لوسي تحلل البيانات وتصيغ الرد... ⏳"):
+        with st.spinner("Nutri يحلل البيانات ويصيغ الرد... ⏳"):
             try:
                 stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                     messages=st.session_state.messages,
@@ -196,7 +228,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             except Exception as e:
                 st.error(f"حدث خطأ شبكي: {e}")
 
-user_input = st.chat_input("اسأل لوسي عن أي استشارة غذائية...")
+user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.session_state.trigger_scroll = True
