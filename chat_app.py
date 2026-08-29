@@ -12,25 +12,29 @@ if "theme" not in st.session_state:
 def toggle_theme():
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
 
-# تحديد الألوان بناءً على الثيم النشط
+# تحديد الألوان بناءً على الثيم النشط لضمان التباين (Contrast)
 if st.session_state.theme == "dark":
     bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
+    solid_bg = "#090a0f"
     text_color = "#ffffff"
     sub_text_color = "#94a3b8"
+    btn_bg = "#1e293b"
+    btn_border = "#334155"
 else:
     bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)"
+    solid_bg = "#f8fafc"
     text_color = "#0f172a"
     sub_text_color = "#475569"
+    btn_bg = "#ffffff"
+    btn_border = "#cbd5e1"
 
 # --- زر تغيير الثيم (أعلى الشاشة) ---
 col_theme, _ = st.columns([1, 6])
 with col_theme:
-    button_label = "☀️ ساطع" if st.session_state.theme == "dark" else "🌙 مظلم"
+    button_label = "☀️ لايت" if st.session_state.theme == "dark" else "🌙 دارك"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
-
-# --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
-# استخدمنا f-string لحقن المتغيرات (text_color و bg_gradient) داخل الـ CSS
+# --- التنسيقات البصرية المتقدمة وإصلاح العيوب ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -39,38 +43,48 @@ st.markdown(f"""
         font-family: 'Cairo', sans-serif !important;
     }}
 
-    /* خلفية متدرجة ديناميكية احترافية */
     .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
         background: {bg_gradient} !important;
     }}
 
-    /* إخفاء الشريط العلوي والشريط الجانبي تماماً */
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
-    /* توسيط العنوان الرئيسي */
-    .centered-title {{
-        text-align: center;
-        font-weight: 700;
-        color: {text_color};
-        margin-bottom: 0px;
+    /* ---------------------------------------------------- */
+    /* 1. إصلاح التوسيط الدقيق (Centering Fix)              */
+    /* ---------------------------------------------------- */
+    .stMarkdown .centered-title {{
+        text-align: center !important;
+        font-weight: 700 !important;
+        color: {text_color} !important;
+        margin-bottom: 0px !important;
     }}
     
-    .centered-subtitle {{
-        text-align: center;
-        color: {sub_text_color};
-        font-size: 14px;
-        margin-top: 5px;
+    .stMarkdown .centered-subtitle {{
+        text-align: center !important;
+        color: {sub_text_color} !important;
+        font-size: 14px !important;
+        margin-top: 5px !important;
+        direction: rtl !important;
     }}
 
-    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل وفرض لون النص */
-    .stMarkdown, .stChatMessage, p, span, div, li, ul, ol {{
-        direction: rtl !important;
-        text-align: right !important;
+    .stMarkdown .centered-footer {{
+        text-align: center !important;
+        color: #64748b !important;
+        font-size: 13px !important;
+        direction: ltr !important; 
+    }}
+
+    /* ---------------------------------------------------- */
+    /* 2. إصلاح الاتجاهات بدون إجبار التوسيط على الانهيار   */
+    /* ---------------------------------------------------- */
+    /* أزلنا !important من المحاذاة لليمين للسماح للتوسيط بالعمل */
+    .stMarkdown p, .stChatMessage p, li, ul, ol {{
+        direction: rtl;
+        text-align: right; 
         color: {text_color} !important;
     }}
 
-    /* ضبط مسافات وترتيب قوائم النقاط والترقيم للغة العربية */
     ul, ol {{
         padding-right: 20px !important;
         padding-left: 0px !important;
@@ -78,14 +92,46 @@ st.markdown(f"""
     }}
 
     li {{
-        text-align: right !important;
         list-style-position: inside !important;
         margin-bottom: 6px;
     }}
 
-    /* تنسيق صندوق الإدخال */
+    /* ---------------------------------------------------- */
+    /* 3. إصلاح وضوح عناصر الإدخال والأزرار (Visibility Fix)*/
+    /* ---------------------------------------------------- */
+    /* إجبار الأزرار على أخذ لون الثيم المختار وليس ثيم الجهاز الأساسي */
+    .stButton > button, .stDownloadButton > button {{
+        background-color: {btn_bg} !important;
+        color: {text_color} !important;
+        border: 1px solid {btn_border} !important;
+    }}
+    .stButton > button p, .stDownloadButton > button p {{
+        color: {text_color} !important;
+    }}
+
+    /* إصلاح صندوق اختيار المجال */
+    div[data-baseweb="select"] > div {{
+        background-color: {btn_bg} !important;
+        border: 1px solid {btn_border} !important;
+    }}
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div {{
+        color: {text_color} !important;
+    }}
+
+    /* إصلاح صندوق الإدخال (شريط المحادثة) */
     .stChatInputContainer {{
-        border-radius: 12px;
+        background-color: {btn_bg} !important;
+        border: 1px solid {btn_border} !important;
+        border-radius: 12px !important;
+    }}
+    .stChatInputContainer textarea, .stChatInputContainer p {{
+        color: {text_color} !important;
+    }}
+
+    /* إصلاح خلفية القائمة المنسدلة للمقترحات (Popover) */
+    div[data-testid="stPopoverBody"] {{
+        background-color: {solid_bg} !important;
+        border: 1px solid {btn_border} !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -181,7 +227,7 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية الموحدة للرد التلقائي مع استخراج النص السليم من الـ stream
+# الآلية الموحدة للرد التلقائي
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
@@ -193,7 +239,6 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                 stream=True,
             )
             
-            # دالة مولدة لاستخراج المحتوى النصي الفعلي من كتل البيانات
             def response_generator():
                 for chunk in stream:
                     if chunk.choices[0].delta.content is not None:
@@ -211,9 +256,9 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
-# 6. التوقيع الهندسي في الأسفل
+# 6. التوقيع الهندسي في الأسفل معدل بالكلاس الجديد
 st.markdown("---")
 st.markdown(
-    "<p style='text-align: center; color: #64748b; font-family: Cairo; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
+    "<p class='centered-footer'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
     unsafe_allow_html=True
 )
