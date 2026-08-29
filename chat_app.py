@@ -28,13 +28,46 @@ else:
     btn_bg = "#ffffff"
     btn_border = "#cbd5e1"
 
-# --- زر تغيير الثيم (أعلى الشاشة) ---
-col_theme, _ = st.columns([1, 6])
+# --- شريط الأدوات العلوي (Control Panel) ---
+# وضعنا الأزرار في مساحة صغيرة في الأعلى لتركيز الانتباه
+col_theme, col_clear, col_save, _ = st.columns([1, 1, 1, 4])
+
 with col_theme:
-    button_label = "☀️ لايت" if st.session_state.theme == "dark" else "🌙 دارك"
+    button_label = "☀️ ساطع" if st.session_state.theme == "dark" else "🌙 مظلم"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
-# --- التنسيقات البصرية المتقدمة وإصلاح العيوب ---
+with col_clear:
+    if st.button("🗑️ مسح", use_container_width=True, help="بدء حوار جديد"):
+        # عند المسح، نحتفظ فقط ببرومبت النظام ونولد أسئلة جديدة
+        if "expert_domain" in st.session_state and st.session_state.expert_domain:
+            temp_domain = st.session_state.expert_domain
+            sys_p = f"أنت 'Nutri'، خبير ومستشار ذكي متخصص في مجال: '{temp_domain}'. وجه إجاباتك بناءً على هذا التخصص بدقة علمية وهندسية عالية. حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم."
+        else:
+            sys_p = f"أنت 'Nutri'، خبير ومستشار ذكي عام في تكنولوجيا وتصنيع الأغذية وكيمياءها. حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم كالمهندس."
+        
+        st.session_state.messages = [{"role": "system", "content": sys_p}]
+        st.session_state.random_suggestions = random.sample([
+            "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
+            "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
+            "كيف يتم تصميم وتطوير خطوط إنتاج وتعبئة الأغذية بكفاءة عالية؟",
+            "ما هي تأثيرات عمليات الحفظ والحرارة على القيمة الغذائية للمنتج؟",
+            "كيف نبتكر وصفات وتركيبات (Formulation) جديدة تناسب متطلبات الأسواق؟",
+            "ما هي الطرق العلمية المتبعة للسيطرة على نمو الميكروبات وفساد الأغذية؟"
+        ], 3)
+        st.rerun()
+
+with col_save:
+    if "messages" in st.session_state:
+        chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
+        st.download_button(
+            label="📥 حفظ",
+            data=chat_export,
+            file_name="nutri_chat_history.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+
+# --- التنسيقات البصرية المتقدمة ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -50,7 +83,7 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
-    /* 1. إصلاح التوسيط الدقيق (Centering Fix) */
+    /* توسيط دقيق */
     .stMarkdown .centered-title {{
         text-align: center !important;
         font-weight: 700 !important;
@@ -73,14 +106,14 @@ st.markdown(f"""
         direction: ltr !important; 
     }}
 
-    /* 2. إصلاح نصوص المحادثة (Chat Text) */
+    /* نصوص المحادثة */
     .stMarkdown p, .stChatMessage p, li, ul, ol {{
         direction: rtl;
         text-align: right; 
         color: {text_color} !important;
     }}
 
-    /* 3. إصلاح وضوح عناصر الإدخال والأزرار (Visibility Fix) */
+    /* الأزرار العلوية والمقترحات */
     .stButton > button, .stDownloadButton > button {{
         background-color: {btn_bg} !important;
         color: {text_color} !important;
@@ -90,11 +123,7 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
 
-    /* ---------------------------------------------------- */
-    /* 4. إصلاح اتجاه الحقول لليمين (RTL Inputs Fix)       */
-    /* ---------------------------------------------------- */
-    
-    /* إصلاح Selectbox (صندوق الاختيار) */
+    /* الحقول والإدخالات */
     div[data-testid="stSelectbox"] label p {{
         direction: rtl !important;
         text-align: right !important;
@@ -112,7 +141,6 @@ st.markdown(f"""
         text-align: right !important;
     }}
 
-    /* إصلاح Chat Input (صندوق المحادثة) */
     div[data-testid="stChatInput"] {{
         direction: rtl !important;
     }}
@@ -130,7 +158,8 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان في المنتصف تماماً
+# 2. العنوان في المنتصف
+st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في كيمياء وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
@@ -171,7 +200,6 @@ if "messages" not in st.session_state:
 else:
     st.session_state.messages[0]["content"] = system_prompt
 
-# 4. بنك الأسئلة وتثبيت المقترحات في الذاكرة
 question_bank = [
     "كيف نتحكم في التفاعلات الكيميائية وتغيرات الألوان أثناء تصنيع المنتجات الغذائية؟",
     "ما هي المعايير الأساسية للرقابة على الجودة وضمان سلامة الأغذية المصنعة؟",
@@ -184,40 +212,14 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# ---------------------------------------------------------
-# استخدام دالة Dialog للمقترحات (لتحل محل الـ Popover)
-# ---------------------------------------------------------
-@st.dialog("💡 اختر سؤالاً للبدء")
-def suggestions_dialog():
+# 4. عرض الأسئلة المقترحة في المنتصف (تختفي بمجرد بدء المحادثة)
+# إذا كان طول الرسائل 1 (يعني مفيش غير برومبت النظام اللي مش بيظهر للمستخدم)
+if len(st.session_state.messages) == 1:
+    st.markdown("<p style='text-align: right; color: #94a3b8; font-size: 14px; margin-bottom: 10px;'>💡 أسئلة مقترحة للبدء:</p>", unsafe_allow_html=True)
     for q in st.session_state.random_suggestions:
-        if st.button(q, use_container_width=True, key=f"dialog_{q}"):
+        if st.button(q, use_container_width=True, key=f"sugg_{q}"):
             st.session_state.messages.append({"role": "user", "content": q})
-            st.rerun() # هذا الأمر سيغلق النافذة المنبثقة تلقائياً ويحدث الشاشة
-
-# توسيط شريط الأدوات بالكامل
-_, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
-
-with col_btn1:
-    if st.button("🗑️ مسح", use_container_width=True, help="مسح المحادثة وبدء حوار جديد"):
-        st.session_state.messages = [{"role": "system", "content": system_prompt}]
-        st.session_state.random_suggestions = random.sample(question_bank, 3)
-        st.rerun()
-
-with col_btn2:
-    chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
-    st.download_button(
-        label="📥 حفظ",
-        data=chat_export,
-        file_name="nutri_chat_history.txt",
-        mime="text/plain",
-        use_container_width=True
-    )
-
-with col_btn3:
-    if st.button("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
-        suggestions_dialog()
-
-st.markdown("<br>", unsafe_allow_html=True)
+            st.rerun()
 
 # 5. عرض رسائل الشات السابقة
 for msg in st.session_state.messages:
@@ -247,14 +249,14 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
         except Exception as e:
             st.error(f"حدث خطأ شبكي: {e}")
 
-# صندوق الإدخال التقليدي
+# 6. صندوق الإدخال التقليدي
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
-# 6. التوقيع الهندسي في الأسفل
+# التوقيع
 st.markdown("---")
 st.markdown(
     "<p class='centered-footer'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
