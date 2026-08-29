@@ -5,12 +5,18 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- إدارة حالة الثيم (Dark/Light Mode) ---
+# --- إدارة حالة الثيم (Dark/Light Mode) مع الاحتفاظ به بعد الـ Refresh ---
+# نعتمد على st.query_params لتخزين الثيم في رابط المتصفح لضمان استمراريته
 if "theme" not in st.session_state:
-    st.session_state.theme = "light"
+    if "theme" in st.query_params:
+        st.session_state.theme = st.query_params["theme"]
+    else:
+        st.session_state.theme = "light" # الوضع الافتراضي
 
 def toggle_theme():
-    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
+    new_theme = "dark" if st.session_state.theme == "light" else "light"
+    st.session_state.theme = new_theme
+    st.query_params["theme"] = new_theme # حقن الثيم الجديد في الرابط
 
 if st.session_state.theme == "dark":
     bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
@@ -27,7 +33,11 @@ else:
     btn_bg = "#ffffff"
     btn_border = "#cbd5e1"
 
-# --- دالة توليد الأسئلة المقترحة (قاعدة بيانات موسعة لتجنب التكرار) ---
+# --- تهيئة الذاكرة أولاً (لحل ثغرة اختفاء زر الحفظ) ---
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
+
+# --- دالة توليد الأسئلة المقترحة ---
 def get_smart_suggestions():
     general_questions = [
         "ما هي أفضل الأنظمة الغذائية لزيادة التركيز والطاقة خلال اليوم؟",
@@ -43,10 +53,10 @@ def get_smart_suggestions():
         "ما هي حقيقة الديتوكس (Detox)، وهل الجسم يحتاج إلى عصائر لتنظيف السموم؟",
         "كيف يمكن تعويض نقص فيتامين D و B12 من خلال التغذية اليومية؟",
         "ما هي البدائل الصحية للزيوت المهدرجة في الطبخ المنزلي؟",
-        "كيف أتعامل مع حساسية الطعام (مثل حساسية الجلوتين أو اللاكتوز) ببدائل اقتصادية؟",
+        "كيف أتعامل مع حساسية الطعام ببدائل اقتصادية؟",
         "هل شرب الماء أثناء تناول الطعام يؤثر على عملية الهضم فعلاً؟",
         "ما هي أفضل الأطعمة لتقوية المناعة بشكل طبيعي ومستدام؟",
-        "كيف يمكن للأم الحامل تنظيم وجباتها لضمان صحة الجنين دون زيادة مفرطة في الوزن؟"
+        "كيف يمكن تنظيم الوجبات لضمان صحة الجنين دون زيادة مفرطة في الوزن؟"
     ]
     
     specialized_questions = [
@@ -56,13 +66,12 @@ def get_smart_suggestions():
         "كيف يمكن تقييم كفاءة الأغلفة الصالحة للأكل في إطالة فترة الصلاحية؟",
         "ما هي أحدث تقنيات الرش المتناهي الصغر (Micro-atomization) في الأغذية؟",
         "كيف يمكن استغلال مخلفات التصنيع الغذائي لابتكار منتجات جديدة (Upcycling)؟",
-        "ما هو تأثير عمليات البسترة والتعقيم على الخصائص الريولوجية (Rheology) للأغذية السائلة؟",
-        "كيف يمكن تقليل تفاعل ميلارد (Maillard Reaction) غير المرغوب فيه أثناء التجفيف الحراري؟",
+        "ما هو تأثير عمليات البسترة والتعقيم على الخصائص الريولوجية للأغذية السائلة؟",
+        "كيف يمكن تقليل تفاعل ميلارد (Maillard Reaction) غير المرغوب فيه أثناء التجفيف؟",
         "ما هي أفضل الاستراتيجيات الهندسية لتقليل استهلاك الطاقة في خطوط إنتاج الأغذية؟",
         "كيف يتم استخدام المواد الحافظة الحيوية (Bio-preservatives) كبديل للمواد الكيميائية؟",
-        "ما هي طرق التحليل الفعالة للكشف عن الغش التجاري في منتجات الألبان والعسل؟",
+        "ما هي طرق التحليل الفعالة للكشف عن الغش التجاري في منتجات الألبان؟",
         "كيف نصمم تجربة تقييم حسي (Sensory Evaluation) دقيقة لمنتج غذائي جديد؟",
-        "ما هي التحديات في تصميم تطبيقات الهواتف التي تحسب السعرات الحرارية باستخدام الذكاء الاصطناعي؟",
         "كيف يتم حساب فترة الصلاحية (Shelf-life Modeling) للمنتجات بناءً على العوامل البيئية؟"
     ]
     
@@ -90,15 +99,15 @@ with col_clear:
         st.rerun()
 
 with col_save:
-    if "messages" in st.session_state:
-        chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
-        st.download_button(
-            label="📥 حفظ",
-            data=chat_export,
-            file_name="nutri_chat_history.txt",
-            mime="text/plain",
-            use_container_width=True
-        )
+    # الآن الزر سيظهر دائماً لأن الذاكرة تمت تهيئتها في الأعلى
+    chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
+    st.download_button(
+        label="📥 حفظ",
+        data=chat_export,
+        file_name="nutri_chat_history.txt",
+        mime="text/plain",
+        use_container_width=True
+    )
 
 # --- التنسيقات البصرية ---
 st.markdown(f"""
@@ -135,7 +144,7 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في التغذية وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. اختيار مجال الاستشارة
+# 3. اختيار مجال الاستشارة وتحديث الـ System Prompt
 domains = [
     "التغذية البشرية والأنظمة الغذائية",
     "استشارة عامة في الأغذية",
@@ -166,10 +175,8 @@ else:
         f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم كالمهندس."
     )
 
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "system", "content": system_prompt}]
-else:
-    st.session_state.messages[0]["content"] = system_prompt
+# تحديث برومبت النظام ديناميكياً بدون مسح الشات
+st.session_state.messages[0]["content"] = system_prompt
 
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = get_smart_suggestions()
@@ -200,7 +207,6 @@ for msg in st.session_state.messages:
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
-            # تم زيادة الـ max_tokens إلى 8000 لاستيعاب الإجابات والتقارير الطويلة
             stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
@@ -217,7 +223,7 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
             answer = st.write_stream(response_generator())
             st.session_state.messages.append({"role": "assistant", "content": answer})
         except Exception as e:
-            st.error(f"حدث خطأ شبكي أو تجاوز لحدود السعة (API Limit): {e}")
+            st.error(f"حدث خطأ شبكي: {e}")
 
 # 6. الإدخال
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
