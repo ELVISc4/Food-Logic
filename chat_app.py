@@ -19,7 +19,7 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
-# --- هندسة الألوان الصلبة (Solid Colors) لصناديق الرسائل ---
+# --- هندسة الألوان الصلبة والمتباينة (WhatsApp Style) ---
 if st.session_state.theme == "dark":
     bg_gradient = "radial-gradient(circle at center, #061c11 0%, #090a0f 60%, #050505 100%)"
     text_color = "#f8fafc"
@@ -27,11 +27,11 @@ if st.session_state.theme == "dark":
     btn_bg = "#0f172a"
     btn_border = "#166534" 
     
-    # ألوان الشات في الدارك مود
-    user_msg_bg = "#dcf8c6" # أخضر واتساب فاتح واضح جداً
-    user_msg_text = "#000000" # نص أسود لضمان الوضوح
-    bot_msg_bg = "#1e293b" # لون داكن جداً لرسائل نيوتري
-    bot_msg_text = "#ffffff" # نص أبيض ناصع
+    # ألوان الشات في الدارك مود (مريحة للعين ومتباينة)
+    user_bg = "#005c4b" # أخضر داكن (رسالة المستخدم)
+    user_text = "#e9edef" # نص فاتح
+    bot_bg = "#202c33" # رمادي فحمي/كحلي داكن (رسالة نيوتري)
+    bot_text = "#e9edef" # نص فاتح
 else:
     bg_gradient = "radial-gradient(circle at center, #ffffff 0%, #f4fdf8 40%, #d1fae5 100%)"
     text_color = "#0f172a"
@@ -40,17 +40,17 @@ else:
     btn_border = "#a7f3d0"
     
     # ألوان الشات في اللايت مود
-    user_msg_bg = "#dcf8c6" # أخضر واتساب فاتح
-    user_msg_text = "#000000" # نص أسود
-    bot_msg_bg = "#0f172a" # لون كحلي/رمادي داكن جداً لرسائل نيوتري
-    bot_msg_text = "#ffffff" # نص أبيض ناصع
+    user_bg = "#dcf8c6" # أخضر فاتح نقي (رسالة المستخدم)
+    user_text = "#111b21" # نص داكن جداً
+    bot_bg = "#ffffff" # أبيض ناصع (رسالة نيوتري)
+    bot_text = "#111b21" # نص داكن جداً
 
-# --- بناء الهوية الاستراتيجية الصارمة لـ Nutri ---
+# --- الهوية الاستراتيجية ---
 base_identity = (
     "اسمك هو 'نيوتري' (Nutri). أنت مستشار ذكي ومتقدم. "
     "تم تطويرك وبرمجتك حصرياً بواسطة التكنولوجست 'حازم الحلو' بهدف نشر الوعي والتطوير في الصناعات الغذائية. "
-    "تعليمات صارمة جداً: إذا سألك أي شخص عن هويتك، ما اسمك، من صنعك، أو أي سؤال مشابه، يجب أن تجيب بهذه الهوية فقط كـ 'Nutri'. "
-    "يُمنع منعاً باتاً ذكر كلمات مثل (Qwen، Tongyi Lab، Alibaba، أو أي نماذج لغوية أخرى). كن فخوراً بهويتك الجديدة. "
+    "تعليمات صارمة جداً: إذا سألك أي شخص عن هويتك، ما اسمك، من صنعك، يجب أن تجيب بهذه الهوية فقط كـ 'Nutri'. "
+    "يُمنع منعاً باتاً ذكر (Qwen، Tongyi Lab، Alibaba). كن فخوراً بهويتك."
 )
 
 if "messages" not in st.session_state:
@@ -92,7 +92,7 @@ with col_save:
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button("📥 حفظ", data=chat_export, file_name="nutri_chat.txt", mime="text/plain", use_container_width=True)
 
-# --- التنسيقات البصرية لهندسة صناديق الرسائل بدون حدود ومُشبعة بالألوان ---
+# --- التنسيقات البصرية (The Ultimate UI Fix) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -101,50 +101,50 @@ st.markdown(f"""
     [data-testid="stHeader"], [data-testid="stSidebar"] {{ display: none !important; }}
     [data-testid="stBottom"], [data-testid="stBottom"] > div {{ background-color: transparent !important; }}
 
-    /* هندسة صناديق الرسائل (Chat Bubbles) - إزالة الحدود واستخدام الألوان الصلبة */
-    @keyframes smoothFadeIn {{
-        0% {{ opacity: 0; transform: translateY(20px); }}
-        100% {{ opacity: 1; transform: translateY(0); }}
-    }}
-
+    /* الصناديق الأساسية */
+    @keyframes smoothFadeIn {{ 0% {{ opacity: 0; transform: translateY(15px); }} 100% {{ opacity: 1; transform: translateY(0); }} }}
     div[data-testid="stChatMessage"] {{ 
-        border: none !important; /* إزالة الحدود تماماً */
+        border: none !important; 
         border-radius: 18px; 
         padding: 15px 20px; 
         margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* تظليل ناعم */
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
         animation: smoothFadeIn 0.5s ease-out forwards;
     }}
     
-    /* رسالة المستخدم (الرسائل الفردية في الترتيب) */
-    div[data-testid="stChatMessage"]:nth-child(odd) {{ 
-        background-color: {user_msg_bg} !important; 
+    /* ------------------------------------------------------------- */
+    /* الاستهداف الدقيق بناءً على الأيقونة (لإلغاء خطأ الترتيب الزوجي) */
+    /* ------------------------------------------------------------- */
+    
+    /* رسالة المستخدم */
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {{ 
+        background-color: {user_bg} !important; 
     }}
-    div[data-testid="stChatMessage"]:nth-child(odd) p,
-    div[data-testid="stChatMessage"]:nth-child(odd) li {{ 
-        color: {user_msg_text} !important; 
-        font-weight: 600;
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) p,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) li {{ 
+        color: {user_text} !important; 
     }}
 
-    /* رسالة Nutri (الرسائل الزوجية في الترتيب) */
-    div[data-testid="stChatMessage"]:nth-child(even) {{ 
-        background-color: {bot_msg_bg} !important; 
+    /* رسالة الذكاء الاصطناعي (نيوتري) */
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {{ 
+        background-color: {bot_bg} !important; 
     }}
-    div[data-testid="stChatMessage"]:nth-child(even) p,
-    div[data-testid="stChatMessage"]:nth-child(even) li,
-    div[data-testid="stChatMessage"]:nth-child(even) h1,
-    div[data-testid="stChatMessage"]:nth-child(even) h2,
-    div[data-testid="stChatMessage"]:nth-child(even) h3,
-    div[data-testid="stChatMessage"]:nth-child(even) strong {{ 
-        color: {bot_msg_text} !important; 
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) p,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) li,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h1,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h2,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h3,
+    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) strong {{ 
+        color: {bot_text} !important; 
     }}
+    /* ------------------------------------------------------------- */
     
     .animated-header {{ text-align: center !important; font-weight: 700 !important; color: {text_color} !important; margin-bottom: 0px !important; direction: rtl !important; display: flex; justify-content: center; align-items: center; gap: 10px; }}
     @keyframes popIn {{ 0% {{ transform: scale(0) rotate(-15deg); opacity: 0; }} 70% {{ transform: scale(1.2) rotate(10deg); opacity: 1; }} 100% {{ transform: scale(1) rotate(0deg); opacity: 1; }} }}
     .apple-icon {{ display: inline-block; animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }}
     
     .stMarkdown p, .stChatMessage p, li, ul, ol {{ direction: rtl; text-align: right; }}
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, h4, h5, h6 {{ color: {text_color} !important; direction: rtl; text-align: right; }}
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, h4, h5, h6 {{ direction: rtl; text-align: right; }}
     table {{ width: 100% !important; border-collapse: collapse !important; margin-bottom: 15px !important; }}
     th, td {{ border: 1px solid rgba(150, 150, 150, 0.2) !important; padding: 8px !important; text-align: right !important; direction: rtl !important; background-color: transparent !important; }}
     th {{ font-weight: 700 !important; }}
