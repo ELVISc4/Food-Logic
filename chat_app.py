@@ -64,7 +64,7 @@ with col_theme:
 with col_clear:
     if st.button("🗑️ مسح", use_container_width=True):
         domain = st.session_state.get("expert_domain", "")
-        sys_p = f"أنت 'Nutri'، خبير في: {domain}." if domain else "أنت 'Nutri'، خبير غذائي."
+        sys_p = f"أنت 'Nutri'، خبير ومستشار متخصص في: {domain}." if domain else "أنت 'Nutri'، خبير ومستشار في الأغذية."
         st.session_state.messages = [{"role": "system", "content": sys_p}]
         st.session_state.random_suggestions = get_smart_suggestions()
         st.rerun()
@@ -73,8 +73,7 @@ with col_save:
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button("📥 حفظ", data=chat_export, file_name="nutri_chat.txt", mime="text/plain", use_container_width=True)
 
-# --- التنسيقات البصرية ---
-# قمنا بإزالة الأنيميشن السابق من الـ chat message بناءً على ملاحظتك ليكون التركيز على النص نفسه
+# --- التنسيقات البصرية والإصلاحات ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -97,16 +96,38 @@ st.markdown(f"""
     th {{ background-color: {btn_bg} !important; font-weight: 700 !important; }}
     
     .stButton > button {{ background-color: {btn_bg} !important; color: {text_color} !important; border: 1px solid {btn_border} !important; }}
-    div[data-testid="stSelectbox"] label p, ul[role="listbox"], div[data-testid="stChatInput"] {{ direction: rtl !important; text-align: right !important; }}
+    
+    /* إصلاح ألوان وعناوين صندوق الاختيار */
+    div[data-testid="stSelectbox"] label p {{ direction: rtl !important; text-align: right !important; color: {text_color} !important; }}
     div[data-baseweb="select"], .stChatInputContainer {{ direction: rtl !important; background-color: {btn_bg} !important; border: 1px solid {btn_border} !important; }}
     div[data-baseweb="select"] span, .stChatInputContainer textarea, .stChatInputContainer p {{ color: {text_color} !important; text-align: right !important; direction: rtl !important; }}
+    ul[role="listbox"] {{ direction: rtl !important; text-align: right !important; background-color: {btn_bg} !important; }}
+    ul[role="listbox"] li {{ color: {text_color} !important; }}
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("<br><h1 class='animated-header'><span class='apple-icon'>🍏</span> Nutri - AI Advisor</h1>", unsafe_allow_html=True)
 st.markdown(f"<p style='text-align: center; color: {sub_text_color}; font-size: 14px; direction: rtl;'>مستشارك الذكي في التغذية وتكنولوجيا الأغذية</p><hr>", unsafe_allow_html=True)
 
-domain = st.selectbox("اختر مجال الاستشارة:", ["التغذية البشرية", "كيمياء الأغذية", "سلامة الغذاء", "هندسة الإنتاج"], index=None, key="expert_domain")
+# --- إرجاع اللغة العربية والنصوص المفقودة ---
+domains = [
+    "التغذية البشرية والأنظمة الغذائية",
+    "استشارة عامة في الأغذية",
+    "كيمياء وتحليل الأغذية",
+    "سلامة وصحة الغذاء وتأمين الجودة",
+    "هندسة وتصنيع خطوط الإنتاج",
+    "تطوير المنتجات والابتكار الغذائي",
+    "ميكروبيولوجيا والأحياء الدقيقة للأغذية"
+]
+
+domain = st.selectbox(
+    "اختر مجال الاستشارة التخصصي:",
+    options=domains,
+    index=None,
+    placeholder="اختر المجال أو اتركه عاماً...",
+    key="expert_domain"
+)
+
 st.session_state.messages[0]["content"] = f"أنت 'Nutri'، خبير في: '{domain}'." if domain else "أنت خبير عام."
 
 if "random_suggestions" not in st.session_state:
@@ -143,13 +164,12 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
                     stream=True,
                 )
                 
-                # --- حل مشكلة الظهور الحاد (Micro-delay Typing Effect) ---
                 def response_generator():
                     for chunk in stream:
                         content = chunk.choices[0].delta.content
                         if content is not None:
                             yield content
-                            time.sleep(0.015) # تأخير 15 ملي ثانية يجعل النص يتدفق بنعومة كالمياه
+                            time.sleep(0.015)
                             
                 answer = st.write_stream(response_generator())
                 st.session_state.messages.append({"role": "assistant", "content": answer})
@@ -159,16 +179,14 @@ if st.session_state.messages and st.session_state.messages[-1]["role"] == "user"
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
-    st.session_state.trigger_scroll = True # تفعيل النزول التلقائي
+    st.session_state.trigger_scroll = True
     st.rerun()
 
 st.markdown("<hr><p style='text-align: center; color: #64748b; font-size: 13px;'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", unsafe_allow_html=True)
 
-# --- حل مشكلة التعلق في منتصف الشات (JS Auto-Scroll Injection) ---
 if st.session_state.get("trigger_scroll"):
     components.html("""
         <script>
-            // إجبار المتصفح على النزول لأسفل الشاشة بسلاسة
             window.parent.document.querySelector('.main').scrollTo({
                 top: window.parent.document.querySelector('.main').scrollHeight,
                 behavior: 'smooth'
