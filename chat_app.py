@@ -12,7 +12,7 @@ if "theme" not in st.session_state:
 def toggle_theme():
     st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
 
-# تحديد الألوان بناءً على الثيم النشط لضمان التباين (Contrast)
+# تحديد الألوان لضمان التباين (Contrast)
 if st.session_state.theme == "dark":
     bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
     solid_bg = "#090a0f"
@@ -50,9 +50,7 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
-    /* ---------------------------------------------------- */
-    /* 1. إصلاح التوسيط الدقيق (Centering Fix)              */
-    /* ---------------------------------------------------- */
+    /* 1. إصلاح التوسيط الدقيق (Centering Fix) */
     .stMarkdown .centered-title {{
         text-align: center !important;
         font-weight: 700 !important;
@@ -75,31 +73,14 @@ st.markdown(f"""
         direction: ltr !important; 
     }}
 
-    /* ---------------------------------------------------- */
-    /* 2. إصلاح الاتجاهات بدون إجبار التوسيط على الانهيار   */
-    /* ---------------------------------------------------- */
-    /* أزلنا !important من المحاذاة لليمين للسماح للتوسيط بالعمل */
+    /* 2. إصلاح نصوص المحادثة (Chat Text) */
     .stMarkdown p, .stChatMessage p, li, ul, ol {{
         direction: rtl;
         text-align: right; 
         color: {text_color} !important;
     }}
 
-    ul, ol {{
-        padding-right: 20px !important;
-        padding-left: 0px !important;
-        margin-right: 0px !important;
-    }}
-
-    li {{
-        list-style-position: inside !important;
-        margin-bottom: 6px;
-    }}
-
-    /* ---------------------------------------------------- */
-    /* 3. إصلاح وضوح عناصر الإدخال والأزرار (Visibility Fix)*/
-    /* ---------------------------------------------------- */
-    /* إجبار الأزرار على أخذ لون الثيم المختار وليس ثيم الجهاز الأساسي */
+    /* 3. إصلاح وضوح عناصر الإدخال والأزرار (Visibility Fix) */
     .stButton > button, .stDownloadButton > button {{
         background-color: {btn_bg} !important;
         color: {text_color} !important;
@@ -109,29 +90,42 @@ st.markdown(f"""
         color: {text_color} !important;
     }}
 
-    /* إصلاح صندوق اختيار المجال */
-    div[data-baseweb="select"] > div {{
+    /* ---------------------------------------------------- */
+    /* 4. إصلاح اتجاه الحقول لليمين (RTL Inputs Fix)       */
+    /* ---------------------------------------------------- */
+    
+    /* إصلاح Selectbox (صندوق الاختيار) */
+    div[data-testid="stSelectbox"] label p {{
+        direction: rtl !important;
+        text-align: right !important;
+    }}
+    div[data-baseweb="select"] {{
+        direction: rtl !important;
         background-color: {btn_bg} !important;
         border: 1px solid {btn_border} !important;
     }}
     div[data-baseweb="select"] span, div[data-baseweb="select"] div {{
         color: {text_color} !important;
     }}
+    ul[role="listbox"] {{
+        direction: rtl !important;
+        text-align: right !important;
+    }}
 
-    /* إصلاح صندوق الإدخال (شريط المحادثة) */
+    /* إصلاح Chat Input (صندوق المحادثة) */
+    div[data-testid="stChatInput"] {{
+        direction: rtl !important;
+    }}
     .stChatInputContainer {{
         background-color: {btn_bg} !important;
         border: 1px solid {btn_border} !important;
         border-radius: 12px !important;
+        direction: rtl !important;
     }}
     .stChatInputContainer textarea, .stChatInputContainer p {{
         color: {text_color} !important;
-    }}
-
-    /* إصلاح خلفية القائمة المنسدلة للمقترحات (Popover) */
-    div[data-testid="stPopoverBody"] {{
-        background-color: {solid_bg} !important;
-        border: 1px solid {btn_border} !important;
+        text-align: right !important;
+        direction: rtl !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -160,7 +154,6 @@ domain = st.selectbox(
     key="expert_domain"
 )
 
-# تحديد دستور النظام بناءً على اختيار المستخدم أو الوضع العام
 if domain:
     system_prompt = (
         f"أنت 'Nutri'، خبير ومستشار ذكي متخصص في مجال: '{domain}'. "
@@ -191,7 +184,17 @@ question_bank = [
 if "random_suggestions" not in st.session_state:
     st.session_state.random_suggestions = random.sample(question_bank, 3)
 
-# توسيط شريط الأدوات بالكامل في منتصف الشاشة
+# ---------------------------------------------------------
+# استخدام دالة Dialog للمقترحات (لتحل محل الـ Popover)
+# ---------------------------------------------------------
+@st.dialog("💡 اختر سؤالاً للبدء")
+def suggestions_dialog():
+    for q in st.session_state.random_suggestions:
+        if st.button(q, use_container_width=True, key=f"dialog_{q}"):
+            st.session_state.messages.append({"role": "user", "content": q})
+            st.rerun() # هذا الأمر سيغلق النافذة المنبثقة تلقائياً ويحدث الشاشة
+
+# توسيط شريط الأدوات بالكامل
 _, col_btn1, col_btn2, col_btn3, _ = st.columns([1.5, 1, 1, 1, 1.5])
 
 with col_btn1:
@@ -207,17 +210,12 @@ with col_btn2:
         data=chat_export,
         file_name="nutri_chat_history.txt",
         mime="text/plain",
-        help="تصدير المحادثة",
         use_container_width=True
     )
 
 with col_btn3:
-    with st.popover("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
-        st.markdown("**أسئلة مقترحة:**")
-        for q in st.session_state.random_suggestions:
-            if st.button(q, use_container_width=True, key=f"sugg_{q}"):
-                st.session_state.messages.append({"role": "user", "content": q})
-                st.rerun()
+    if st.button("💡 مقترحة", use_container_width=True, help="أسئلة تقنية مقترحة"):
+        suggestions_dialog()
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -256,7 +254,7 @@ if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
-# 6. التوقيع الهندسي في الأسفل معدل بالكلاس الجديد
+# 6. التوقيع الهندسي في الأسفل
 st.markdown("---")
 st.markdown(
     "<p class='centered-footer'>Designed & Developed 🚀 by <b>Hazem El-Helw</b></p>", 
