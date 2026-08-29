@@ -25,7 +25,7 @@ else:
 # --- زر تغيير الثيم (أعلى الشاشة) ---
 col_theme, _ = st.columns([1, 6])
 with col_theme:
-    button_label = "☀️ لايت" if st.session_state.theme == "dark" else "🌙 دارك"
+    button_label = "☀️ ساطع" if st.session_state.theme == "dark" else "🌙 مظلم"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
 
