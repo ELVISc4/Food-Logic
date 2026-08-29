@@ -6,17 +6,16 @@ import random
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
 # --- إدارة حالة الثيم (Dark/Light Mode) مع الاحتفاظ به بعد الـ Refresh ---
-# نعتمد على st.query_params لتخزين الثيم في رابط المتصفح لضمان استمراريته
 if "theme" not in st.session_state:
     if "theme" in st.query_params:
         st.session_state.theme = st.query_params["theme"]
     else:
-        st.session_state.theme = "light" # الوضع الافتراضي
+        st.session_state.theme = "light"
 
 def toggle_theme():
     new_theme = "dark" if st.session_state.theme == "light" else "light"
     st.session_state.theme = new_theme
-    st.query_params["theme"] = new_theme # حقن الثيم الجديد في الرابط
+    st.query_params["theme"] = new_theme
 
 if st.session_state.theme == "dark":
     bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
@@ -33,7 +32,7 @@ else:
     btn_bg = "#ffffff"
     btn_border = "#cbd5e1"
 
-# --- تهيئة الذاكرة أولاً (لحل ثغرة اختفاء زر الحفظ) ---
+# --- تهيئة الذاكرة أولاً ---
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
 
@@ -79,11 +78,11 @@ def get_smart_suggestions():
     random.shuffle(selected)
     return selected
 
-# --- شريط الأدوات العلوي (Control Panel) ---
+# --- شريط الأدوات العلوي ---
 col_theme, col_clear, col_save, _ = st.columns([1, 1, 1, 4])
 
 with col_theme:
-    button_label = "🌙 مظلم" if st.session_state.theme == "light" else "☀️ ساطع"
+    button_label = "🌙 مظلم" if st.session_state.theme == "light" else "☀️ فاتح"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
 with col_clear:
@@ -99,7 +98,6 @@ with col_clear:
         st.rerun()
 
 with col_save:
-    # الآن الزر سيظهر دائماً لأن الذاكرة تمت تهيئتها في الأعلى
     chat_export = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state.messages if msg['role'] != 'system'])
     st.download_button(
         label="📥 حفظ",
@@ -144,7 +142,7 @@ st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_al
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في التغذية وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
-# 3. اختيار مجال الاستشارة وتحديث الـ System Prompt
+# 3. اختيار مجال الاستشارة
 domains = [
     "التغذية البشرية والأنظمة الغذائية",
     "استشارة عامة في الأغذية",
@@ -175,7 +173,6 @@ else:
         f"حدودك الصارمة: لا تقدم تشخيصاً طبياً بشرياً علاجياً. أسلوبك: دقيق، ومنظم كالمهندس."
     )
 
-# تحديث برومبت النظام ديناميكياً بدون مسح الشات
 st.session_state.messages[0]["content"] = system_prompt
 
 if "random_suggestions" not in st.session_state:
@@ -207,11 +204,12 @@ for msg in st.session_state.messages:
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
+            # هنا تم تخفيض max_tokens إلى 4000 لترك مساحة كافية للذاكرة (Buffer) وتجنب خطأ 413
             stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
                 temperature=0.2,
-                max_tokens=8000, 
+                max_tokens=4000, 
                 stream=True,
             )
             
