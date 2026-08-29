@@ -5,62 +5,88 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
+# --- إدارة حالة الثيم (Dark/Light Mode) ---
+if "theme" not in st.session_state:
+    st.session_state.theme = "dark"
+
+def toggle_theme():
+    st.session_state.theme = "light" if st.session_state.theme == "dark" else "dark"
+
+# تحديد الألوان بناءً على الثيم النشط
+if st.session_state.theme == "dark":
+    bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
+    text_color = "#ffffff"
+    sub_text_color = "#94a3b8"
+else:
+    bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)"
+    text_color = "#0f172a"
+    sub_text_color = "#475569"
+
+# --- زر تغيير الثيم (أعلى الشاشة) ---
+col_theme, _ = st.columns([1, 6])
+with col_theme:
+    button_label = "☀️ لايت" if st.session_state.theme == "dark" else "🌙 دارك"
+    st.button(button_label, on_click=toggle_theme, use_container_width=True)
+
+
 # --- التنسيقات البصرية المتقدمة وإصلاح محاذاة القوائم والمسافات ---
-st.markdown("""
+# استخدمنا f-string لحقن المتغيرات (text_color و bg_gradient) داخل الـ CSS
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
     
-    html, body, [class*="css"] {
+    html, body, [class*="css"] {{
         font-family: 'Cairo', sans-serif !important;
-    }
+    }}
 
     /* خلفية متدرجة ديناميكية احترافية */
-    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
-        background: linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%) !important;
-    }
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {{
+        background: {bg_gradient} !important;
+    }}
 
     /* إخفاء الشريط العلوي والشريط الجانبي تماماً */
-    [data-testid="stHeader"] { display: none !important; }
-    [data-testid="stSidebar"] { display: none !important; }
+    [data-testid="stHeader"] {{ display: none !important; }}
+    [data-testid="stSidebar"] {{ display: none !important; }}
 
     /* توسيط العنوان الرئيسي */
-    .centered-title {
+    .centered-title {{
         text-align: center;
         font-weight: 700;
-        color: #ffffff;
+        color: {text_color};
         margin-bottom: 0px;
-    }
+    }}
     
-    .centered-subtitle {
+    .centered-subtitle {{
         text-align: center;
-        color: #94a3b8;
+        color: {sub_text_color};
         font-size: 14px;
         margin-top: 5px;
-    }
+    }}
 
-    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل */
-    .stMarkdown, .stChatMessage, p, span, div, li, ul, ol {
+    /* فرض الاتجاه الأيمن ومحاذاة النصوص بالكامل وفرض لون النص */
+    .stMarkdown, .stChatMessage, p, span, div, li, ul, ol {{
         direction: rtl !important;
         text-align: right !important;
-    }
+        color: {text_color} !important;
+    }}
 
     /* ضبط مسافات وترتيب قوائم النقاط والترقيم للغة العربية */
-    ul, ol {
+    ul, ol {{
         padding-right: 20px !important;
         padding-left: 0px !important;
         margin-right: 0px !important;
-    }
+    }}
 
-    li {
+    li {{
         text-align: right !important;
         list-style-position: inside !important;
         margin-bottom: 6px;
-    }
+    }}
 
     /* تنسيق صندوق الإدخال */
-    .stChatInputContainer {
+    .stChatInputContainer {{
         border-radius: 12px;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
