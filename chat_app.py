@@ -17,23 +17,23 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
-# --- تطبيق الهوية البصرية (Nutri Green Identity) ---
+# --- تطبيق الهوية البصرية (Radial Gradients) ---
 if st.session_state.theme == "dark":
-    # تدرج داكن احترافي يميل للأخضر الغامق (Forest/Emerald Dark)
-    bg_gradient = "linear-gradient(135deg, #090a0f 0%, #061c11 50%, #0d1117 100%)"
+    # تدرج دائري: المركز أخضر داكن ينتشر للأسود في الأطراف
+    bg_gradient = "radial-gradient(circle at center, #061c11 0%, #090a0f 60%, #050505 100%)"
     solid_bg = "#090a0f"
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     btn_bg = "#0f172a"
-    btn_border = "#166534" # أخضر داكن للحدود
+    btn_border = "#166534" 
 else:
-    # تدرج فاتح مريح يميل للأخضر الفاتح جداً (Mint/Apple Light)
-    bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #ecfdf5 50%, #f0f9ff 100%)"
-    solid_bg = "#f8fafc"
+    # تدرج دائري: المركز أبيض ساطع ينتشر للأخضر الفاتح في الأطراف
+    bg_gradient = "radial-gradient(circle at center, #ffffff 0%, #f4fdf8 40%, #d1fae5 100%)"
+    solid_bg = "#ffffff"
     text_color = "#0f172a"
     sub_text_color = "#475569"
     btn_bg = "#ffffff"
-    btn_border = "#a7f3d0" # أخضر فاتح للحدود
+    btn_border = "#a7f3d0"
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
@@ -83,7 +83,7 @@ def get_smart_suggestions():
 col_theme, col_clear, col_save, _ = st.columns([1, 1, 1, 4])
 
 with col_theme:
-    button_label = "🌙 دارك" if st.session_state.theme == "light" else "☀️ لايت"
+    button_label = "🌙 مظلم" if st.session_state.theme == "light" else "☀️ ساطع"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
 with col_clear:
@@ -108,7 +108,7 @@ with col_save:
         use_container_width=True
     )
 
-# --- التنسيقات البصرية والحل الجذري للون النصوص والجداول ---
+# --- التنسيقات البصرية مع الأنيميشن ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -118,16 +118,49 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
-    .stMarkdown .centered-title {{ text-align: center !important; font-weight: 700 !important; color: {text_color} !important; margin-bottom: 0px !important; }}
+    /* ---------------------------------------------------- */
+    /* 1. الأنيميشن الخاص بالعنوان (Keyframes)              */
+    /* ---------------------------------------------------- */
+    @keyframes popIn {{
+        0% {{ transform: scale(0) rotate(-15deg); opacity: 0; }}
+        70% {{ transform: scale(1.2) rotate(10deg); opacity: 1; }}
+        100% {{ transform: scale(1) rotate(0deg); opacity: 1; }}
+    }}
+    
+    @keyframes slideInUp {{
+        0% {{ transform: translateY(15px); opacity: 0; }}
+        100% {{ transform: translateY(0); opacity: 1; }}
+    }}
+
+    .animated-header {{
+        text-align: center !important;
+        font-weight: 700 !important;
+        color: {text_color} !important;
+        margin-bottom: 0px !important;
+        direction: rtl !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }}
+
+    .apple-icon {{
+        display: inline-block;
+        animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }}
+
+    .nutri-text {{
+        display: inline-block;
+        opacity: 0;
+        animation: slideInUp 0.8s ease-out 0.4s forwards; /* تأخير 0.4 ثانية ليظهر بعد التفاحة */
+    }}
+    /* ---------------------------------------------------- */
+
     .stMarkdown .centered-subtitle {{ text-align: center !important; color: {sub_text_color} !important; font-size: 14px !important; margin-top: 5px !important; direction: rtl !important; }}
     .stMarkdown .centered-footer {{ text-align: center !important; color: #64748b !important; font-size: 13px !important; direction: ltr !important; }}
     
-    /* فرض اللون والاتجاه على النصوص العادية */
     .stMarkdown p, .stChatMessage p, li, ul, ol {{ direction: rtl; text-align: right; color: {text_color} !important; }}
 
-    /* ------------------------------------------------------------------ */
-    /* إصلاح العناوين والجداول لتأخذ لون الثيم الصحيح (The Bug Fix)       */
-    /* ------------------------------------------------------------------ */
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6,
     .stChatMessage h1, .stChatMessage h2, .stChatMessage h3, .stChatMessage h4, .stChatMessage h5, .stChatMessage h6 {{
         color: {text_color} !important;
@@ -135,25 +168,9 @@ st.markdown(f"""
         text-align: right;
     }}
 
-    table {{
-        width: 100% !important;
-        color: {text_color} !important;
-        border-collapse: collapse !important;
-        margin-bottom: 15px !important;
-    }}
-    th, td {{
-        border: 1px solid {btn_border} !important;
-        color: {text_color} !important;
-        padding: 8px !important;
-        text-align: right !important;
-        direction: rtl !important;
-        background-color: transparent !important;
-    }}
-    th {{
-        background-color: {btn_bg} !important;
-        font-weight: 700 !important;
-    }}
-    /* ------------------------------------------------------------------ */
+    table {{ width: 100% !important; color: {text_color} !important; border-collapse: collapse !important; margin-bottom: 15px !important; }}
+    th, td {{ border: 1px solid {btn_border} !important; color: {text_color} !important; padding: 8px !important; text-align: right !important; direction: rtl !important; background-color: transparent !important; }}
+    th {{ background-color: {btn_bg} !important; font-weight: 700 !important; }}
 
     .stButton > button, .stDownloadButton > button {{ background-color: {btn_bg} !important; color: {text_color} !important; border: 1px solid {btn_border} !important; }}
     .stButton > button p, .stDownloadButton > button p {{ color: {text_color} !important; }}
@@ -169,9 +186,14 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان
+# 2. العنوان مع الأنيميشن الجديد (مفصول لـ spans)
 st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("<h1 class='centered-title'>🍏 Nutri - AI Advisor</h1>", unsafe_allow_html=True)
+st.markdown("""
+    <h1 class='animated-header'>
+        <span class='apple-icon'>🍏</span>
+        <span class='nutri-text'>Nutri - AI Advisor</span>
+    </h1>
+""", unsafe_allow_html=True)
 st.markdown("<p class='centered-subtitle'>مستشارك الذكي في التغذية وتكنولوجيا الأغذية</p>", unsafe_allow_html=True)
 st.markdown("---")
 
