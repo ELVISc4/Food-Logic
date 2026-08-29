@@ -113,28 +113,28 @@ st.markdown(f"""
     }}
     
     /* ------------------------------------------------------------- */
-    /* الاستهداف الدقيق بناءً على الأيقونة (لإلغاء خطأ الترتيب الزوجي) */
+    /* الاستهداف الدقيق بناءً على الأيقونة (الإصلاح الجديد) */
     /* ------------------------------------------------------------- */
     
     /* رسالة المستخدم */
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) {{ 
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {{ 
         background-color: {user_bg} !important; 
     }}
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) p,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-user"]) li {{ 
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) p,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) li {{ 
         color: {user_text} !important; 
     }}
 
     /* رسالة الذكاء الاصطناعي (نيوتري) */
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) {{ 
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {{ 
         background-color: {bot_bg} !important; 
     }}
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) p,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) li,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h1,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h2,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) h3,
-    div[data-testid="stChatMessage"]:has([data-testid="chatAvatarIcon-assistant"]) strong {{ 
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) p,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) li,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) h1,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) h2,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) h3,
+    div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) strong {{ 
         color: {bot_text} !important; 
     }}
     /* ------------------------------------------------------------- */
