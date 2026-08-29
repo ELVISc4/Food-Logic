@@ -17,23 +17,23 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
-# --- تطبيق الهوية البصرية (Radial Gradients) ---
+# --- تطبيق الهوية البصرية وتصحيح الألوان ---
 if st.session_state.theme == "dark":
-    # تدرج دائري: المركز أخضر داكن ينتشر للأسود في الأطراف
     bg_gradient = "radial-gradient(circle at center, #061c11 0%, #090a0f 60%, #050505 100%)"
     solid_bg = "#090a0f"
     text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
     btn_bg = "#0f172a"
     btn_border = "#166534" 
+    chat_user_bg = "rgba(255, 255, 255, 0.03)" # شفافية خفيفة جداً لرسالة المستخدم
 else:
-    # تدرج دائري: المركز أبيض ساطع ينتشر للأخضر الفاتح في الأطراف
     bg_gradient = "radial-gradient(circle at center, #ffffff 0%, #f4fdf8 40%, #d1fae5 100%)"
     solid_bg = "#ffffff"
     text_color = "#0f172a"
     sub_text_color = "#475569"
     btn_bg = "#ffffff"
     btn_border = "#a7f3d0"
+    chat_user_bg = "rgba(255, 255, 255, 0.6)" # خلفية زجاجية فاتحة لرسالة المستخدم
 
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
@@ -108,7 +108,7 @@ with col_save:
         use_container_width=True
     )
 
-# --- التنسيقات البصرية مع الأنيميشن ---
+# --- التنسيقات البصرية والأنيميشن وإصلاح الخلفيات ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -118,9 +118,31 @@ st.markdown(f"""
     [data-testid="stHeader"] {{ display: none !important; }}
     [data-testid="stSidebar"] {{ display: none !important; }}
 
-    /* ---------------------------------------------------- */
-    /* 1. الأنيميشن الخاص بالعنوان (Keyframes)              */
-    /* ---------------------------------------------------- */
+    /* ------------------------------------------------------------------ */
+    /* إصلاح خلفية الرسائل والشريط السفلي (The UI Fix)                    */
+    /* ------------------------------------------------------------------ */
+    
+    /* جعل الحاوية السفلية لشريط الإدخال شفافة لتظهر الخلفية الأصلية */
+    [data-testid="stBottom"] {{
+        background-color: transparent !important;
+    }}
+    [data-testid="stBottom"] > div {{
+        background-color: transparent !important;
+    }}
+
+    /* تظبيط لون خلفية رسالة المستخدم لتكون زجاجية وتلغي اللون الرمادي المزعج */
+    div[data-testid="stChatMessage"] {{
+        background-color: transparent !important; /* إلغاء الافتراضي */
+        border-radius: 15px;
+        padding: 10px;
+    }}
+    /* تخصيص رسالة المستخدم تحديداً */
+    div[data-testid="stChatMessage"]:nth-child(even) {{
+        background-color: {chat_user_bg} !important;
+        border: 1px solid {btn_border} !important;
+    }}
+    /* ------------------------------------------------------------------ */
+
     @keyframes popIn {{
         0% {{ transform: scale(0) rotate(-15deg); opacity: 0; }}
         70% {{ transform: scale(1.2) rotate(10deg); opacity: 1; }}
@@ -152,9 +174,8 @@ st.markdown(f"""
     .nutri-text {{
         display: inline-block;
         opacity: 0;
-        animation: slideInUp 0.8s ease-out 0.4s forwards; /* تأخير 0.4 ثانية ليظهر بعد التفاحة */
+        animation: slideInUp 0.8s ease-out 0.4s forwards;
     }}
-    /* ---------------------------------------------------- */
 
     .stMarkdown .centered-subtitle {{ text-align: center !important; color: {sub_text_color} !important; font-size: 14px !important; margin-top: 5px !important; direction: rtl !important; }}
     .stMarkdown .centered-footer {{ text-align: center !important; color: #64748b !important; font-size: 13px !important; direction: ltr !important; }}
@@ -163,9 +184,7 @@ st.markdown(f"""
 
     .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6,
     .stChatMessage h1, .stChatMessage h2, .stChatMessage h3, .stChatMessage h4, .stChatMessage h5, .stChatMessage h6 {{
-        color: {text_color} !important;
-        direction: rtl;
-        text-align: right;
+        color: {text_color} !important; direction: rtl; text-align: right;
     }}
 
     table {{ width: 100% !important; color: {text_color} !important; border-collapse: collapse !important; margin-bottom: 15px !important; }}
@@ -186,7 +205,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# 2. العنوان مع الأنيميشن الجديد (مفصول لـ spans)
+# 2. العنوان مع الأنيميشن
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("""
     <h1 class='animated-header'>
@@ -255,29 +274,32 @@ for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# الآلية للرد التلقائي
+# 6. الآلية للرد التلقائي مع مؤشر التحميل (Spinner)
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
-        try:
-            stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
-                messages=st.session_state.messages,
-                model="qwen/qwen3.8-27b",
-                temperature=0.2,
-                max_tokens=4000, 
-                stream=True,
-            )
-            
-            def response_generator():
-                for chunk in stream:
-                    if chunk.choices[0].delta.content is not None:
-                        yield chunk.choices[0].delta.content
+        # وضعنا الدائرة الدوارة هنا لتعطي استجابة فورية للمستخدم
+        with st.spinner("Nutri يحلل البيانات ويصيغ الرد... ⏳"):
+            try:
+                stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
+                    messages=st.session_state.messages,
+                    model="qwen/qwen3.8-27b",
+                    temperature=0.2,
+                    max_tokens=4000, 
+                    stream=True,
+                )
+                
+                def response_generator():
+                    for chunk in stream:
+                        if chunk.choices[0].delta.content is not None:
+                            yield chunk.choices[0].delta.content
 
-            answer = st.write_stream(response_generator())
-            st.session_state.messages.append({"role": "assistant", "content": answer})
-        except Exception as e:
-            st.error(f"حدث خطأ شبكي: {e}")
+                # بمجرد أن يبدأ الـ Stream، سيختفي الـ Spinner تلقائياً ويظهر النص
+                answer = st.write_stream(response_generator())
+                st.session_state.messages.append({"role": "assistant", "content": answer})
+            except Exception as e:
+                st.error(f"حدث تأخير في الشبكة أو خطأ بالخادم. يرجى المحاولة مرة أخرى.\n\n التفاصيل: {e}")
 
-# 6. الإدخال
+# 7. الإدخال
 user_input = st.chat_input("اسأل Nutri عن أي استشارة غذائية...")
 
 if user_input:
