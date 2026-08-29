@@ -5,7 +5,7 @@ import random
 # 1. إعداد الواجهة والاسم
 st.set_page_config(page_title="Nutri - AI Advisor", page_icon="🍏", layout="centered")
 
-# --- إدارة حالة الثيم (Dark/Light Mode) مع الاحتفاظ به بعد الـ Refresh ---
+# --- إدارة حالة الثيم مع الاحتفاظ به ---
 if "theme" not in st.session_state:
     if "theme" in st.query_params:
         st.session_state.theme = st.query_params["theme"]
@@ -17,26 +17,27 @@ def toggle_theme():
     st.session_state.theme = new_theme
     st.query_params["theme"] = new_theme
 
+# --- تطبيق الهوية البصرية (Nutri Green Identity) ---
 if st.session_state.theme == "dark":
-    bg_gradient = "linear-gradient(135deg, #090a0f 0%, #13151f 50%, #0d1117 100%)"
+    # تدرج داكن احترافي يميل للأخضر الغامق (Forest/Emerald Dark)
+    bg_gradient = "linear-gradient(135deg, #090a0f 0%, #061c11 50%, #0d1117 100%)"
     solid_bg = "#090a0f"
-    text_color = "#ffffff"
+    text_color = "#f8fafc"
     sub_text_color = "#94a3b8"
-    btn_bg = "#1e293b"
-    btn_border = "#334155"
+    btn_bg = "#0f172a"
+    btn_border = "#166534" # أخضر داكن للحدود
 else:
-    bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%)"
+    # تدرج فاتح مريح يميل للأخضر الفاتح جداً (Mint/Apple Light)
+    bg_gradient = "linear-gradient(135deg, #f8fafc 0%, #ecfdf5 50%, #f0f9ff 100%)"
     solid_bg = "#f8fafc"
     text_color = "#0f172a"
     sub_text_color = "#475569"
     btn_bg = "#ffffff"
-    btn_border = "#cbd5e1"
+    btn_border = "#a7f3d0" # أخضر فاتح للحدود
 
-# --- تهيئة الذاكرة أولاً ---
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "system", "content": "أنت 'Nutri'، خبير ومستشار ذكي."}]
 
-# --- دالة توليد الأسئلة المقترحة ---
 def get_smart_suggestions():
     general_questions = [
         "ما هي أفضل الأنظمة الغذائية لزيادة التركيز والطاقة خلال اليوم؟",
@@ -48,8 +49,8 @@ def get_smart_suggestions():
         "ما هي الأطعمة التي تساعد في تحسين عملية الهضم وصحة الأمعاء؟",
         "كيف يمكنني التفرقة بين الجوع الحقيقي والجوع العاطفي؟",
         "ما هي العلاقة بين النظام الغذائي وجودة النوم؟",
-        "كيف يمكن بناء وجبة ما قبل وبعد التمرين (Pre/Post Workout) لتعظيم الاستفادة؟",
-        "ما هي حقيقة الديتوكس (Detox)، وهل الجسم يحتاج إلى عصائر لتنظيف السموم؟",
+        "كيف يمكن بناء وجبة ما قبل وبعد التمرين لتعظيم الاستفادة؟",
+        "ما هي حقيقة الديتوكس، وهل الجسم يحتاج إلى عصائر لتنظيف السموم؟",
         "كيف يمكن تعويض نقص فيتامين D و B12 من خلال التغذية اليومية؟",
         "ما هي البدائل الصحية للزيوت المهدرجة في الطبخ المنزلي؟",
         "كيف أتعامل مع حساسية الطعام ببدائل اقتصادية؟",
@@ -68,7 +69,7 @@ def get_smart_suggestions():
         "ما هو تأثير عمليات البسترة والتعقيم على الخصائص الريولوجية للأغذية السائلة؟",
         "كيف يمكن تقليل تفاعل ميلارد (Maillard Reaction) غير المرغوب فيه أثناء التجفيف؟",
         "ما هي أفضل الاستراتيجيات الهندسية لتقليل استهلاك الطاقة في خطوط إنتاج الأغذية؟",
-        "كيف يتم استخدام المواد الحافظة الحيوية (Bio-preservatives) كبديل للمواد الكيميائية؟",
+        "كيف يتم استخدام المواد الحافظة الحيوية كبديل للمواد الكيميائية؟",
         "ما هي طرق التحليل الفعالة للكشف عن الغش التجاري في منتجات الألبان؟",
         "كيف نصمم تجربة تقييم حسي (Sensory Evaluation) دقيقة لمنتج غذائي جديد؟",
         "كيف يتم حساب فترة الصلاحية (Shelf-life Modeling) للمنتجات بناءً على العوامل البيئية؟"
@@ -82,7 +83,7 @@ def get_smart_suggestions():
 col_theme, col_clear, col_save, _ = st.columns([1, 1, 1, 4])
 
 with col_theme:
-    button_label = "🌙 مظلم" if st.session_state.theme == "light" else "☀️ فاتح"
+    button_label = "🌙 دارك" if st.session_state.theme == "light" else "☀️ لايت"
     st.button(button_label, on_click=toggle_theme, use_container_width=True)
 
 with col_clear:
@@ -107,7 +108,7 @@ with col_save:
         use_container_width=True
     )
 
-# --- التنسيقات البصرية ---
+# --- التنسيقات البصرية والحل الجذري للون النصوص والجداول ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
@@ -120,7 +121,39 @@ st.markdown(f"""
     .stMarkdown .centered-title {{ text-align: center !important; font-weight: 700 !important; color: {text_color} !important; margin-bottom: 0px !important; }}
     .stMarkdown .centered-subtitle {{ text-align: center !important; color: {sub_text_color} !important; font-size: 14px !important; margin-top: 5px !important; direction: rtl !important; }}
     .stMarkdown .centered-footer {{ text-align: center !important; color: #64748b !important; font-size: 13px !important; direction: ltr !important; }}
+    
+    /* فرض اللون والاتجاه على النصوص العادية */
     .stMarkdown p, .stChatMessage p, li, ul, ol {{ direction: rtl; text-align: right; color: {text_color} !important; }}
+
+    /* ------------------------------------------------------------------ */
+    /* إصلاح العناوين والجداول لتأخذ لون الثيم الصحيح (The Bug Fix)       */
+    /* ------------------------------------------------------------------ */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6,
+    .stChatMessage h1, .stChatMessage h2, .stChatMessage h3, .stChatMessage h4, .stChatMessage h5, .stChatMessage h6 {{
+        color: {text_color} !important;
+        direction: rtl;
+        text-align: right;
+    }}
+
+    table {{
+        width: 100% !important;
+        color: {text_color} !important;
+        border-collapse: collapse !important;
+        margin-bottom: 15px !important;
+    }}
+    th, td {{
+        border: 1px solid {btn_border} !important;
+        color: {text_color} !important;
+        padding: 8px !important;
+        text-align: right !important;
+        direction: rtl !important;
+        background-color: transparent !important;
+    }}
+    th {{
+        background-color: {btn_bg} !important;
+        font-weight: 700 !important;
+    }}
+    /* ------------------------------------------------------------------ */
 
     .stButton > button, .stDownloadButton > button {{ background-color: {btn_bg} !important; color: {text_color} !important; border: 1px solid {btn_border} !important; }}
     .stButton > button p, .stDownloadButton > button p {{ color: {text_color} !important; }}
@@ -204,7 +237,6 @@ for msg in st.session_state.messages:
 if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
     with st.chat_message("assistant"):
         try:
-            # هنا تم تخفيض max_tokens إلى 4000 لترك مساحة كافية للذاكرة (Buffer) وتجنب خطأ 413
             stream = Groq(api_key=st.secrets["GROQ_API_KEY"]).chat.completions.create(
                 messages=st.session_state.messages,
                 model="qwen/qwen3.8-27b",
